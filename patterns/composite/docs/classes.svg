@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" role="img" aria-labelledby="title"><title id="title">composite: диаграмма классов</title><style>text{font-family:system-ui,-apple-system,sans-serif;fill:#173443;font-size:16px}.role{font-size:13px;fill:#556d77}.method{font:14px ui-monospace,monospace}.edge{fill:none;stroke:#346678;stroke-width:2}.box{fill:#fff;stroke:#346678;stroke-width:1.5}</style><rect width="1000" height="470" fill="#f8fbfc"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#346678" stroke-width="1.5"/></marker><marker id="inherit" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker><marker id="diamond" markerWidth="12" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1 6 L6 1 L11 6 L6 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker></defs>
+<polyline class="edge" points="210,300 210,210 490,210 490,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="780,300 780,210 490,210 490,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="930,370 975,370 975,100 630,100" marker-end="url(#arrow)" marker-start="url(#diamond)"/>
+<text class="role" x="952.5" y="360.0" text-anchor="middle">children</text>
+<rect class="box" x="350" y="30" width="280" height="140" rx="5"/>
+<text x="490.0" y="58" text-anchor="middle" font-weight="650">Component</text>
+<text class="role" x="490.0" y="80" text-anchor="middle">общий интерфейс</text>
+<path class="edge" d="M350 92 H630"/>
+<text class="method" x="364" y="116">turn_on()</text>
+<text class="method" x="364" y="137">turn_off()</text>
+<text class="method" x="364" y="158">describe()</text>
+<rect class="box" x="70" y="300" width="280" height="140" rx="5"/>
+<text x="210.0" y="328" text-anchor="middle" font-weight="650">Device</text>
+<text class="role" x="210.0" y="350" text-anchor="middle">Leaf</text>
+<path class="edge" d="M70 362 H350"/>
+<text class="method" x="84" y="386">is_on</text>
+<text class="method" x="84" y="407">turn_on() / turn_off()</text>
+<rect class="box" x="630" y="300" width="300" height="140" rx="5"/>
+<text x="780.0" y="328" text-anchor="middle" font-weight="650">DeviceGroup</text>
+<text class="role" x="780.0" y="350" text-anchor="middle">Composite</text>
+<path class="edge" d="M630 362 H930"/>
+<text class="method" x="644" y="386">children: Component[]</text>
+<text class="method" x="644" y="407">add() / remove()</text>
+<text class="method" x="644" y="428">turn_on() / turn_off()</text>
+</svg>

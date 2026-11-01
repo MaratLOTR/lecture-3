@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adapter — Адаптер · Умный дом</title><link rel="icon" href="data:,"><style>
+:root{color-scheme:light;font:17px/1.65 system-ui,-apple-system,sans-serif;color:#203640;background:#fafbf9}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:32px 24px 70px}
+nav{display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid #ccd7da;padding-bottom:18px}
+a{color:#176579;text-underline-offset:3px}nav [aria-current]{font-weight:750;color:#203640}
+h1{font:700 clamp(30px,5vw,48px)/1.2 Georgia,serif;margin:40px 0 26px}
+h2{font:650 29px/1.3 Georgia,serif;margin:44px 0 18px}h3{margin:25px 0 12px}
+p,li{max-width:78ch}li{margin:6px 0}code{font:0.88em ui-monospace,monospace}
+pre{padding:18px;background:#edf2f3;border:1px solid #d7e1e4;overflow:auto;line-height:1.6}
+pre code{white-space:pre}p code,li code,td code{overflow-wrap:anywhere}
+.scroll,.diagram{overflow:auto}table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #ccd7da}th{background:#eef3f3}
+.diagram img{display:block;width:100%;min-width:700px;height:auto;border:1px solid #d7e1e4}
+figure{margin:20px 0 30px}figcaption{margin-top:8px;color:#526970;font-size:15px}
+details{margin:18px 0;border-top:1px solid #ccd7da;padding-top:14px}summary{cursor:pointer;font-weight:650}
+button{font:inherit;font-size:14px;padding:6px 12px;background:#fff;border:1px solid #78939e;cursor:pointer;margin-top:14px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #257f99;outline-offset:4px}
+.status{margin-left:12px;font-size:14px}.note{border-left:4px solid #3b8190;padding:10px 18px;background:#edf4f3}
+footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#526970}
+@media(max-width:600px){main{padding:20px 15px}pre{font-size:14px}h2{font-size:25px}}
+@media print{nav,button,.status{display:none}main{max-width:none;padding:0}body{background:#fff}pre{white-space:pre-wrap;overflow:visible;font-size:10px}pre code{white-space:pre-wrap}details{break-inside:avoid}.diagram img{min-width:0}h2,h3{break-after:avoid}}
+</style></head>
+<body><main><nav aria-label="Паттерны"><a href="../../adapter/docs/cheatsheet.html" aria-current="page">Adapter — Адаптер</a><a href="../../facade/docs/cheatsheet.html">Facade — Фасад</a><a href="../../composite/docs/cheatsheet.html">Composite — Компоновщик</a><a href="../../bridge/docs/cheatsheet.html">Bridge — Мост · самостоятельно</a></nav>
+<p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
+Bridge — дополнительный раздел для самостоятельного изучения.</p>
+<h1>Adapter — Адаптер</h1>
+<p>Пример из презентации «Лекция 3»: слайды 7–16; практика: слайд 19. Номера соответствуют фактическому порядку слайдов в файле.</p>
+<h2>Проблема</h2>
+<p>Приложение управляет приборами через <code>set_power(enabled)</code>. <code>ModernLight</code> уже поддерживает этот интерфейс. Готовая <code>LegacyLamp</code> предоставляет только <code>switch_on()</code> и <code>switch_off()</code>. Если передать её клиенту напрямую, получим <code>AttributeError</code>: у старой лампы нет <code>set_power()</code>.</p>
+<p>Adapter преобразует готовый интерфейс в тот, которого ожидает клиент. Старую библиотеку и общий алгоритм управления менять не требуется.</p>
+<h2>Два варианта из лекции</h2>
+<div class="scroll"><table><tr><th>Различие</th><th>Адаптер объекта</th><th>Адаптер класса</th></tr><tr><td>Класс</td><td><code>LampObjectAdapter(Switchable)</code></td><td><code>LampClassAdapter(Switchable, LegacyLamp)</code></td></tr><tr><td>Связь с лампой</td><td>Хранит <code>self.lamp</code></td><td>Наследует <code>LegacyLamp</code></td></tr><tr><td>Состояние</td><td>В переданном экземпляре</td><td>В самом адаптере, поле <code>powered</code></td></tr><tr><td>Включение</td><td><code>self.lamp.switch_on()</code></td><td><code>self.switch_on()</code></td></tr><tr><td>Готовый экземпляр</td><td>Можно обернуть</td><td>Создаёт собственное состояние</td></tr></table></div>
+<p>Адаптер класса явно вызывает <code>LegacyLamp.__init__(self)</code>. Он предоставляет и унаследованные <code>switch_on()</code> / <code>switch_off()</code>, и новый <code>set_power()</code>. Адаптер объекта делегирует команды одному и тому же переданному объекту.</p>
+<div class="scroll"><table><tr><th>Роль</th><th>Класс или функция</th></tr><tr><td>Target — ожидаемый контракт</td><td><code>Switchable.set_power(enabled)</code></td></tr><tr><td>Adaptee — готовый несовместимый API</td><td><code>LegacyLamp</code></td></tr><tr><td>Adapter — перевод интерфейсов</td><td><code>LampObjectAdapter</code>, <code>LampClassAdapter</code></td></tr><tr><td>Client — общий алгоритм</td><td><code>set_all_power()</code></td></tr><tr><td>Изначально совместимое устройство</td><td><code>ModernLight</code></td></tr></table></div>
+<pre><code>lamp = LegacyLamp()
+object_adapter = LampObjectAdapter(lamp)
+class_adapter = LampClassAdapter()
+devices = [ModernLight(), object_adapter, class_adapter]
+set_all_power(devices, True)
+assert lamp.powered is True
+assert class_adapter.powered is True
+set_all_power(devices, False)</code></pre>
+<p>В файле со слайдом 8 клиент показан как <code>Client.set_all_power()</code>, а на последующих слайдах — как функция <code>set_all_power()</code>. Здесь используется функция с корректной аннотацией <code>Iterable[Switchable]</code>; алгоритм обхода одинаков. Прежнее имя <code>LegacyLampAdapter</code> сохранено как ссылка на <code>LampObjectAdapter</code>.</p>
+<h2>Код и запуск</h2>
+<ul><li><a href="../devices.py">devices.py</a> — контракт, устройства, оба адаптера и общий клиент.</li><li><a href="../__main__.py">__main__.py</a> — включение и выключение всех вариантов одним клиентом.</li><li><a href="../TASK.md">TASK.md</a> — задание из лекции и дополнительная практика.</li><li><a href="../tests/test_example.py">tests/test_example.py</a> — проверки готового примера.</li><li><a href="../tests/test_task.py">tests/test_task.py</a> — проверки задания.</li><li><a href="../adapter_thermostat.py">adapter_thermostat.py</a> и <a href="../tests/test_extra.py">tests/test_extra.py</a> — дополнительная практика.</li></ul>
+<p>Все материалы находятся в этой папке; её можно передать студенту отдельно. Нужен Python 3.10+ и pytest 9+. В Codespaces pytest устанавливается автоматически. Из этой папки:</p>
+<pre><code>python3 __main__.py
+pytest tests/test_example.py
+pytest tests/test_task.py</code></pre>
+<p>Готовый пример проходит сразу. Проверки задания дают <code>FAILED</code>, пока требуемые классы не реализованы. Успех — все проверки <code>PASSED</code>, без пропусков.</p>
+<p>Из корня проекта также работают <code>python3 -m patterns.adapter</code> и <code>pytest tests/test_adapter.py</code> (пример и задание вместе).</p>
+<h2>Применимость и ограничения</h2>
+<p>Adapter нужен при подключении стороннего или устаревшего API. Он позволяет повторно использовать код и изолировать особенности этого API от клиента. Цена — дополнительные классы и делегирование; изменение API потребует проверки адаптера. Для простого случая отдельный класс может оказаться избыточным. Адаптация должна сохранять смысл операций, даже если различаются единицы измерения.</p>
+<p><strong>Вопрос:</strong> какой вариант позволяет подключить уже созданный экземпляр лампы и почему?</p>
+<h2>Дополнительные материалы</h2>
+<ul><li><a href="../docs/diagrams.md">UML: классы и последовательность вызовов</a>.</li><li><a href="../docs/cheatsheet.html">HTML-шпаргалка с теорией, кодом, заданиями и тестами</a>.</li></ul><h2>Задание: два адаптера вентилятора</h2>
+<p>Практика со слайда 19 презентации «Лекция 3». Номер — фактический порядок слайда в файле. Работайте в <a href="../devices.py">devices.py</a>. Примеры адаптеров лампы уже реализованы.</p>
+<p>Готовый <code>ForeignFan</code> имеет метод <code>set_mode(&quot;RUN&quot;)</code> / <code>set_mode(&quot;STOP&quot;)</code>. Клиент ожидает <code>Switchable.set_power(enabled)</code>.</p>
+<ol><li>Добавьте <code>FanAdapter(Switchable)</code> — адаптер объекта. Конструктор принимает готовый <code>ForeignFan</code> и сохраняет именно этот экземпляр в <code>self.fan</code>. <code>set_power(True)</code> вызывает <code>self.fan.set_mode(&quot;RUN&quot;)</code>, <code>set_power(False)</code> — <code>self.fan.set_mode(&quot;STOP&quot;)</code>.</li><li>Добавьте <code>FanClassAdapter(Switchable, ForeignFan)</code> — адаптер класса. Конструктор без аргументов инициализирует унаследованный <code>ForeignFan</code>; начальный <code>mode</code> равен <code>&quot;STOP&quot;</code>. <code>set_power()</code> вызывает унаследованный <code>self.set_mode()</code> с теми же значениями. Старый метод остаётся доступен.</li><li>Проверьте оба адаптера в одном списке с <code>ModernLight</code>, <code>LampObjectAdapter</code> и <code>LampClassAdapter</code>. Весь список управляется неизменённым <code>set_all_power()</code>. Повторные команды включения и выключения также должны работать.</li></ol>
+<p>Не меняйте <code>ForeignFan</code>, <code>Switchable</code>, <code>set_all_power()</code> и тесты. Не присваивайте <code>mode</code> напрямую: используйте готовый API вентилятора. После добавления классов демонстрация автоматически покажет оба вентилятора.</p>
+<h2>Проверка задания</h2>
+<p>Из этой папки паттерна:</p>
+<pre><code>pytest tests/test_task.py</code></pre>
+<p>Пока классы не добавлены, проверки дают <code>FAILED</code> с подсказкой. Задание выполнено, когда все пять тестов завершаются <code>PASSED</code>, без пропусков. Тесты проверяют сохранение исходного объекта, наследование, начальное состояние, вызовы стороннего API и работу обоих адаптеров через общий клиент.</p>
+<p>Из корня проекта также работает <code>pytest tests/test_adapter.py</code> (проверяет готовый пример и задание вместе).</p>
+<h2>Дополнительная практика</h2>
+<p><a href="../adapter_thermostat.py">adapter_thermostat.py</a> — отдельное задание вне лекции: реализуйте чтение и запись температуры через <code>ThermostatAdapter</code>, согласуя °C и °F. Формулы, диапазон и требования к ошибкам описаны в начале файла.</p>
+<pre><code>pytest tests/test_extra.py</code></pre>
+<p>До реализации TODO эти отдельные тесты падают с <code>NotImplementedError</code>.</p>
+<h2 id="uml">UML-диаграммы</h2><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20710%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Eadapter%3A%20%D0%B4%D0%B8%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0%20%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22710%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22165%2C300%20165%2C220%20465%2C220%20465%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C300%20500%2C240%20465%2C240%20465%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22640%2C370%20720%2C370%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22680.0%22%20y%3D%22360.0%22%20text-anchor%3D%22middle%22%3Elamp%3C%2Ftext%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22690%2C100%20600%2C100%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22330%22%20y%3D%2230%22%20width%3D%22270%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22465.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ESwitchable%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22465.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3ETarget%20%C2%B7%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D1%84%D0%B5%D0%B9%D1%81%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M330%2092%20H600%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22344%22%20y%3D%22116%22%3Eset_power%28enabled%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22690%22%20y%3D%2230%22%20width%3D%22270%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22825.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EClient%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22825.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3E%D0%BA%D0%BB%D0%B8%D0%B5%D0%BD%D1%82%D1%81%D0%BA%D0%B0%D1%8F%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D1%8F%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M690%2092%20H960%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22704%22%20y%3D%22116%22%3Eset_all_power%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2230%22%20y%3D%22300%22%20width%3D%22270%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22165.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EModernLight%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22165.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3E%D1%81%D0%BE%D0%B2%D0%BC%D0%B5%D1%81%D1%82%D0%B8%D0%BC%D0%BE%D0%B5%20%D1%83%D1%81%D1%82%D1%80%D0%BE%D0%B9%D1%81%D1%82%D0%B2%D0%BE%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M30%20362%20H300%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2244%22%20y%3D%22386%22%3Eset_power%28enabled%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22360%22%20y%3D%22300%22%20width%3D%22280%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22500.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ELampObjectAdapter%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22500.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3EAdapter%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M360%20362%20H640%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22374%22%20y%3D%22386%22%3Elamp%3A%20LegacyLamp%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22374%22%20y%3D%22407%22%3Eset_power%28enabled%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22720%22%20y%3D%22300%22%20width%3D%22250%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22845.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ELegacyLamp%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22845.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3EAdaptee%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M720%20362%20H970%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22734%22%20y%3D%22386%22%3Eswitch_on%28%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22734%22%20y%3D%22407%22%3Eswitch_off%28%29%3C%2Ftext%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C530%20325%2C530%20325%2C190%20465%2C190%20465%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22640%2C600%20845%2C600%20845%2C440%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22845%22%20y%3D%22630%22%20text-anchor%3D%22middle%22%3E%D0%BD%D0%B0%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20API%20%D0%B8%20%D1%81%D0%BE%D1%81%D1%82%D0%BE%D1%8F%D0%BD%D0%B8%D1%8F%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22360%22%20y%3D%22530%22%20width%3D%22280%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22500%22%20y%3D%22558%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ELampClassAdapter%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22500%22%20y%3D%22580%22%20text-anchor%3D%22middle%22%3EAdapter%20%C2%B7%20%D0%BD%D0%B0%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M360%20592%20H640%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22374%22%20y%3D%22616%22%3Eset_power%28enabled%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22374%22%20y%3D%22644%22%3Eself.switch_on%28%29%20%2F%20switch_off%28%29%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: диаграмма классов"></div><figcaption>UML: диаграмма классов</figcaption></figure><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20420%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Eadapter%3A%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D1%8C%20%D0%B2%D1%8B%D0%B7%D0%BE%D0%B2%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22420%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2289.66666666666666%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M166.66666666666666%2090%20V400%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22166.66666666666666%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EClient%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22423.0%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M500.0%2090%20V400%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22500.0%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ELampObjectAdapter%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22756.3333333333334%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M833.3333333333334%2090%20V400%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22833.3333333333334%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ELegacyLamp%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M166.66666666666666%20145%20H500.0%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22333.3333333333333%22%20y%3D%22132%22%20text-anchor%3D%22middle%22%3E1.%20set_power%28True%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M500.0%20210%20H833.3333333333334%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22666.6666666666667%22%20y%3D%22197%22%20text-anchor%3D%22middle%22%3E2.%20switch_on%28%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M166.66666666666666%20275%20H500.0%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22333.3333333333333%22%20y%3D%22262%22%20text-anchor%3D%22middle%22%3E3.%20set_power%28False%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M500.0%20340%20H833.3333333333334%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22666.6666666666667%22%20y%3D%22327%22%20text-anchor%3D%22middle%22%3E4.%20switch_off%28%29%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: последовательность вызовов"></div><figcaption>UML: последовательность вызовов</figcaption></figure>
+<h2 id="code">Код и дополнительная практика</h2>
+<p>Заготовка с TODO проверяется отдельно от работающих примеров.
+Команды и порядок выполнения — в <a href="../TASK.md">описании задания этого паттерна</a>.</p>
+<details open><summary>Реализация: devices.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Adapter: клиент управляет новой и старой лампами через один интерфейс.
+
+Switchable — Target; LegacyLamp — Adaptee;
+LampObjectAdapter, LampClassAdapter — Adapter; set_all_power — Client.
+&quot;&quot;&quot;
+
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
+
+
+class Switchable(ABC):
+    @abstractmethod
+    def set_power(self, enabled: bool) -&gt; None:
+        &quot;&quot;&quot;Установить питание устройства.&quot;&quot;&quot;
+
+
+class ModernLight(Switchable):
+    def __init__(self) -&gt; None:
+        self.is_on = False
+
+    def set_power(self, enabled: bool) -&gt; None:
+        self.is_on = enabled
+
+
+class LegacyLamp:
+    &quot;&quot;&quot;Имитирует готовую стороннюю библиотеку; её интерфейс не меняем.&quot;&quot;&quot;
+
+    def __init__(self) -&gt; None:
+        self.powered = False
+
+    def switch_on(self) -&gt; None:
+        self.powered = True
+
+    def switch_off(self) -&gt; None:
+        self.powered = False
+
+
+class LampObjectAdapter(Switchable):
+    def __init__(self, lamp: LegacyLamp) -&gt; None:
+        self.lamp = lamp
+
+    def set_power(self, enabled: bool) -&gt; None:
+        if enabled:
+            self.lamp.switch_on()
+        else:
+            self.lamp.switch_off()
+
+
+class LampClassAdapter(Switchable, LegacyLamp):
+    def __init__(self) -&gt; None:
+        LegacyLamp.__init__(self)
+
+    def set_power(self, enabled: bool) -&gt; None:
+        if enabled:
+            self.switch_on()
+        else:
+            self.switch_off()
+
+
+# Сохраняем прежнее имя для уже написанных примеров.
+LegacyLampAdapter = LampObjectAdapter
+
+
+def set_all_power(devices: Iterable[Switchable], enabled: bool) -&gt; None:
+    &quot;&quot;&quot;Клиенту не нужно знать конкретные классы и старые методы.&quot;&quot;&quot;
+    for device in devices:
+        device.set_power(enabled)
+
+
+class ForeignFan:
+    &quot;&quot;&quot;Ещё один сторонний API, который предстоит адаптировать.&quot;&quot;&quot;
+
+    def __init__(self) -&gt; None:
+        self.mode = &quot;STOP&quot;
+
+    def set_mode(self, mode: str) -&gt; None:
+        if mode not in (&quot;RUN&quot;, &quot;STOP&quot;):
+            raise ValueError(&quot;Допустимые режимы: RUN и STOP&quot;)
+        self.mode = mode
+
+
+# ЗАДАНИЕ (слайд 19): добавьте FanAdapter(Switchable), хранящий self.fan,
+# и FanClassAdapter(Switchable, ForeignFan), наследующий готовый API.
+# Оба переводят set_power(True) в set_mode(&quot;RUN&quot;), False — в set_mode(&quot;STOP&quot;).
+# Не меняйте ForeignFan и клиентскую функцию set_all_power.
+# Условия и команды проверки: TASK.md; тесты: tests/test_task.py.
+</code></pre></details><details open><summary>Демонстрация: __main__.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>if __package__:
+    from . import devices
+else:
+    import devices
+
+
+def demo() -&gt; None:
+    print(&quot;=== Adapter: разные интерфейсы, одна команда ===&quot;)
+    light = devices.ModernLight()
+    lamp = devices.LegacyLamp()
+    object_adapter = devices.LampObjectAdapter(lamp)
+    class_adapter = devices.LampClassAdapter()
+    switches = [light, object_adapter, class_adapter]
+    fan = devices.ForeignFan()
+    fan_adapter = getattr(devices, &quot;FanAdapter&quot;, None)
+    if fan_adapter is not None:
+        switches.append(fan_adapter(fan))
+    fan_class_adapter_type = getattr(devices, &quot;FanClassAdapter&quot;, None)
+    fan_class_adapter = None
+    if fan_class_adapter_type is not None:
+        fan_class_adapter = fan_class_adapter_type()
+        switches.append(fan_class_adapter)
+    for enabled in (True, False):
+        devices.set_all_power(switches, enabled)
+        print(
+            f&quot;Питание {enabled}: новая лампа={light.is_on}, &quot;
+            f&quot;адаптер объекта={lamp.powered}, адаптер класса={class_adapter.powered}&quot;
+        )
+        if fan_adapter is not None:
+            print(f&quot;  Вентилятор: {fan.mode}&quot;)
+        if fan_class_adapter is not None:
+            print(f&quot;  Вентилятор через наследование: {fan_class_adapter.mode}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    demo()
+</code></pre></details><details open><summary>Дополнительное задание: adapter_thermostat.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Adapter: приложение использует °C, сторонний термостат — °F.
+
+Реализуйте два метода ThermostatAdapter, не меняя ForeignThermostat.
+Формулы: C = (F - 32) * 5 / 9; F = C * 9 / 5 + 32.
+Допустимая температура: 10–30 °C. Недопустимое значение вызывает ValueError
+и не изменяет состояние термостата. Не округляйте промежуточный результат.
+
+Из папки паттерна: pytest tests/test_extra.py
+&quot;&quot;&quot;
+
+from abc import ABC, abstractmethod
+
+
+class TemperatureControl(ABC):
+    @abstractmethod
+    def get_celsius(self) -&gt; float:
+        &quot;&quot;&quot;Прочитать температуру в °C.&quot;&quot;&quot;
+
+    @abstractmethod
+    def set_celsius(self, temperature: float) -&gt; None:
+        &quot;&quot;&quot;Установить температуру в °C.&quot;&quot;&quot;
+
+
+class ForeignThermostat:
+    &quot;&quot;&quot;Готовый сторонний API; менять не нужно.&quot;&quot;&quot;
+
+    def __init__(self) -&gt; None:
+        self._fahrenheit = 68.0
+
+    def read_fahrenheit(self) -&gt; float:
+        return self._fahrenheit
+
+    def write_fahrenheit(self, temperature: float) -&gt; None:
+        if not 50 &lt;= temperature &lt;= 86:
+            raise ValueError(&quot;Температура должна быть от 50 до 86 °F&quot;)
+        self._fahrenheit = temperature
+
+
+class ThermostatAdapter(TemperatureControl):
+    def __init__(self, thermostat: ForeignThermostat) -&gt; None:
+        self.thermostat = thermostat
+
+    def get_celsius(self) -&gt; float:
+        # TODO: прочитайте температуру через сторонний API и переведите в °C.
+        raise NotImplementedError(&quot;Реализуйте чтение температуры через адаптер&quot;)
+
+    def set_celsius(self, temperature: float) -&gt; None:
+        # TODO: проверьте диапазон и передайте значение в °F стороннему API.
+        raise NotImplementedError(&quot;Реализуйте установку температуры через адаптер&quot;)
+</code></pre></details><details open><summary>Тесты: tests/test_example.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import patch
+
+from .. import devices
+
+
+class AdapterTests(unittest.TestCase):
+    def test_same_client_controls_modern_and_legacy_lights(self):
+        light = devices.ModernLight()
+        lamp = devices.LegacyLamp()
+        adapter = devices.LampObjectAdapter(lamp)
+        self.assertIs(adapter.lamp, lamp)
+        for enabled in (True, False, False, True):
+            devices.set_all_power([light, adapter], enabled)
+            self.assertEqual(light.is_on, enabled)
+            self.assertEqual(lamp.powered, enabled)
+
+    def test_adapter_delegates_to_legacy_api(self):
+        lamp = devices.LegacyLamp()
+        adapter = devices.LampObjectAdapter(lamp)
+        with patch.object(lamp, &quot;switch_on&quot;, wraps=lamp.switch_on) as on:
+            adapter.set_power(True)
+            on.assert_called_once_with()
+        with patch.object(lamp, &quot;switch_off&quot;, wraps=lamp.switch_off) as off:
+            adapter.set_power(False)
+            off.assert_called_once_with()
+
+    def test_foreign_fan_rejects_unknown_mode(self):
+        fan = devices.ForeignFan()
+        with self.assertRaises(ValueError):
+            fan.set_mode(&quot;FAST&quot;)
+        self.assertEqual(fan.mode, &quot;STOP&quot;)
+
+    def test_class_adapter_implements_both_interfaces(self):
+        adapter = devices.LampClassAdapter()
+        self.assertIsInstance(adapter, devices.Switchable)
+        self.assertIsInstance(adapter, devices.LegacyLamp)
+        self.assertFalse(adapter.powered)
+        adapter.switch_on()
+        self.assertTrue(adapter.powered)
+        adapter.switch_off()
+        self.assertFalse(adapter.powered)
+        light = devices.ModernLight()
+        lamp = devices.LegacyLamp()
+        for enabled in (True, True, False, False, True):
+            devices.set_all_power([light, devices.LampObjectAdapter(lamp), adapter], enabled)
+            self.assertEqual((light.is_on, lamp.powered, adapter.powered), (enabled,) * 3)
+
+    def test_class_adapter_uses_inherited_api(self):
+        adapter = devices.LampClassAdapter()
+        for enabled, method in ((True, &quot;switch_on&quot;), (False, &quot;switch_off&quot;)):
+            with self.subTest(enabled=enabled):
+                with patch.object(adapter, method, wraps=getattr(adapter, method)) as call:
+                    adapter.set_power(enabled)
+                    call.assert_called_once_with()
+
+    def test_old_adapter_name_remains_available(self):
+        self.assertIs(devices.LegacyLampAdapter, devices.LampObjectAdapter)
+
+</code></pre></details><details open><summary>Тесты: tests/test_task.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import call, patch
+
+from .. import devices
+
+
+class FanAdapterTaskTests(unittest.TestCase):
+    def require(self, name):
+        cls = getattr(devices, name, None)
+        self.assertIsNotNone(cls, f&quot;ЗАДАНИЕ: добавьте {name} в devices.py (см. TASK.md)&quot;)
+        self.assertTrue(issubclass(cls, devices.Switchable))
+        return cls
+
+    def test_object_adapter_wraps_original_fan(self):
+        fan = devices.ForeignFan()
+        adapter = self.require(&quot;FanAdapter&quot;)(fan)
+        self.assertIs(adapter.fan, fan)
+        for enabled, mode in ((True, &quot;RUN&quot;), (True, &quot;RUN&quot;), (False, &quot;STOP&quot;), (False, &quot;STOP&quot;)):
+            adapter.set_power(enabled)
+            self.assertEqual(fan.mode, mode)
+
+    def test_object_adapter_calls_foreign_api(self):
+        fan = devices.ForeignFan()
+        adapter = self.require(&quot;FanAdapter&quot;)(fan)
+        with patch.object(fan, &quot;set_mode&quot;, wraps=fan.set_mode) as set_mode:
+            adapter.set_power(True)
+            adapter.set_power(False)
+            self.assertEqual(set_mode.call_args_list, [call(&quot;RUN&quot;), call(&quot;STOP&quot;)])
+
+    def test_class_adapter_inherits_foreign_fan_and_initializes_state(self):
+        cls = self.require(&quot;FanClassAdapter&quot;)
+        self.assertTrue(issubclass(cls, devices.ForeignFan))
+        adapter = cls()
+        self.assertEqual(adapter.mode, &quot;STOP&quot;)
+        adapter.set_mode(&quot;RUN&quot;)
+        self.assertEqual(adapter.mode, &quot;RUN&quot;)
+        adapter.set_power(False)
+        self.assertEqual(adapter.mode, &quot;STOP&quot;)
+
+    def test_class_adapter_calls_inherited_api(self):
+        adapter = self.require(&quot;FanClassAdapter&quot;)()
+        with patch.object(adapter, &quot;set_mode&quot;, wraps=adapter.set_mode) as set_mode:
+            adapter.set_power(True)
+            adapter.set_power(False)
+            self.assertEqual(set_mode.call_args_list, [call(&quot;RUN&quot;), call(&quot;STOP&quot;)])
+
+    def test_one_client_controls_both_adapters_and_lights(self):
+        fan = devices.ForeignFan()
+        fan_adapter = self.require(&quot;FanAdapter&quot;)(fan)
+        class_adapter = self.require(&quot;FanClassAdapter&quot;)()
+        light = devices.ModernLight()
+        lamp = devices.LegacyLamp()
+        class_lamp = devices.LampClassAdapter()
+        switches = [light, devices.LampObjectAdapter(lamp), class_lamp, fan_adapter, class_adapter]
+        for enabled, mode in ((True, &quot;RUN&quot;), (False, &quot;STOP&quot;), (False, &quot;STOP&quot;), (True, &quot;RUN&quot;)):
+            devices.set_all_power(switches, enabled)
+            self.assertEqual((fan.mode, class_adapter.mode), (mode, mode))
+            self.assertEqual((light.is_on, lamp.powered, class_lamp.powered), (enabled,) * 3)
+</code></pre></details><details open><summary>Тесты: tests/test_extra.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import patch
+
+from ..adapter_thermostat import ForeignThermostat, ThermostatAdapter
+
+
+class ThermostatTests(unittest.TestCase):
+    def test_reads_the_current_temperature_of_original_device(self):
+        thermostat = ForeignThermostat()
+        adapter = ThermostatAdapter(thermostat)
+        self.assertAlmostEqual(adapter.get_celsius(), 20)
+        thermostat.write_fahrenheit(86)
+        self.assertAlmostEqual(adapter.get_celsius(), 30)
+
+    def test_writes_fractional_temperature_through_foreign_api(self):
+        thermostat = ForeignThermostat()
+        adapter = ThermostatAdapter(thermostat)
+        with patch.object(thermostat, &quot;write_fahrenheit&quot;, wraps=thermostat.write_fahrenheit) as write:
+            adapter.set_celsius(22.5)
+            write.assert_called_once()
+            self.assertAlmostEqual(write.call_args.args[0], 72.5)
+        self.assertAlmostEqual(thermostat.read_fahrenheit(), 72.5)
+        self.assertAlmostEqual(adapter.get_celsius(), 22.5)
+
+    def test_boundaries_and_rejected_commands(self):
+        thermostat = ForeignThermostat()
+        adapter = ThermostatAdapter(thermostat)
+        for celsius, fahrenheit in ((10, 50), (30, 86)):
+            adapter.set_celsius(celsius)
+            self.assertAlmostEqual(thermostat.read_fahrenheit(), fahrenheit)
+        for invalid in (9, 31, float(&quot;nan&quot;)):
+            with self.assertRaises(ValueError):
+                adapter.set_celsius(invalid)
+            self.assertAlmostEqual(thermostat.read_fahrenheit(), 86)
+</code></pre></details>
+<footer>Страница собрана из исходников проекта.
+После изменений выполните <code>python3 tools/build_cheatsheets.py</code>.
+Диаграммы и код встроены в этот HTML; для перехода к другим паттернам сохраните папку проекта целиком.</footer>
+</main><script>
+document.querySelectorAll('.copy').forEach(button => {
+  button.addEventListener('click', async () => {
+    const code = button.parentElement.querySelector('code');
+    const status = button.nextElementSibling;
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      status.textContent = 'Скопировано';
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(code);
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+      status.textContent = 'Код выделен. Нажмите Ctrl+C или ⌘C.';
+    }
+  });
+});
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.dataset.wasOpen = String(item.open); item.open = true;
+  });
+});
+window.addEventListener('afterprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.open = item.dataset.wasOpen === 'true';
+  });
+});
+</script></body></html>

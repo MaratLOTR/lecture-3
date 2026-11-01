@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bridge — Мост · самостоятельно · Умный дом</title><link rel="icon" href="data:,"><style>
+:root{color-scheme:light;font:17px/1.65 system-ui,-apple-system,sans-serif;color:#203640;background:#fafbf9}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:32px 24px 70px}
+nav{display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid #ccd7da;padding-bottom:18px}
+a{color:#176579;text-underline-offset:3px}nav [aria-current]{font-weight:750;color:#203640}
+h1{font:700 clamp(30px,5vw,48px)/1.2 Georgia,serif;margin:40px 0 26px}
+h2{font:650 29px/1.3 Georgia,serif;margin:44px 0 18px}h3{margin:25px 0 12px}
+p,li{max-width:78ch}li{margin:6px 0}code{font:0.88em ui-monospace,monospace}
+pre{padding:18px;background:#edf2f3;border:1px solid #d7e1e4;overflow:auto;line-height:1.6}
+pre code{white-space:pre}p code,li code,td code{overflow-wrap:anywhere}
+.scroll,.diagram{overflow:auto}table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #ccd7da}th{background:#eef3f3}
+.diagram img{display:block;width:100%;min-width:700px;height:auto;border:1px solid #d7e1e4}
+figure{margin:20px 0 30px}figcaption{margin-top:8px;color:#526970;font-size:15px}
+details{margin:18px 0;border-top:1px solid #ccd7da;padding-top:14px}summary{cursor:pointer;font-weight:650}
+button{font:inherit;font-size:14px;padding:6px 12px;background:#fff;border:1px solid #78939e;cursor:pointer;margin-top:14px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #257f99;outline-offset:4px}
+.status{margin-left:12px;font-size:14px}.note{border-left:4px solid #3b8190;padding:10px 18px;background:#edf4f3}
+footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#526970}
+@media(max-width:600px){main{padding:20px 15px}pre{font-size:14px}h2{font-size:25px}}
+@media print{nav,button,.status{display:none}main{max-width:none;padding:0}body{background:#fff}pre{white-space:pre-wrap;overflow:visible;font-size:10px}pre code{white-space:pre-wrap}details{break-inside:avoid}.diagram img{min-width:0}h2,h3{break-after:avoid}}
+</style></head>
+<body><main><nav aria-label="Паттерны"><a href="../../adapter/docs/cheatsheet.html">Adapter — Адаптер</a><a href="../../facade/docs/cheatsheet.html">Facade — Фасад</a><a href="../../composite/docs/cheatsheet.html">Composite — Компоновщик</a><a href="../../bridge/docs/cheatsheet.html" aria-current="page">Bridge — Мост · самостоятельно</a></nav>
+<p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
+Bridge — дополнительный раздел для самостоятельного изучения.</p>
+<h1>Bridge — Мост</h1>
+<p><strong>Дополнительный раздел для самостоятельного углублённого изучения.</strong> Основная практика курса завершается на Adapter, Facade и Composite.</p>
+<h2>Проблема: две независимые оси расширения</h2>
+<p>В умном доме есть разные <strong>виды управления</strong>: обычный пульт, расширенный пульт, пульт для презентаций. Есть разные <strong>виды устройств</strong>: телевизор, проектор, радио.</p>
+<p>Если делать отдельный класс для каждой комбинации, появятся <code>BasicTVRemote</code>, <code>AdvancedTVRemote</code>, <code>BasicProjectorRemote</code>, <code>AdvancedProjectorRemote</code> и так далее. Добавление одного устройства потребует новых классов для всех видов пультов.</p>
+<h2>Решение и роли</h2>
+<p>Пульт хранит ссылку на <code>MediaDevice</code> и делегирует ему низкоуровневые операции. Иерархия пультов и иерархия устройств развиваются независимо. Здесь «реализация» означает сторону устройств, а не конкретный подкласс пульта.</p>
+<div class="scroll"><table><tr><th>Роль</th><th>Участник</th></tr><tr><td>Abstraction</td><td><code>Remote</code> — включение и установка громкости</td></tr><tr><td>RefinedAbstraction</td><td><code>AdvancedRemote</code> — дополнительная операция <code>mute()</code></td></tr><tr><td>Implementor</td><td><code>MediaDevice</code> — контракт устройств</td></tr><tr><td>ConcreteImplementor</td><td><code>TV</code>, <code>Projector</code></td></tr></table></div>
+<pre><code>Remote ───── хранит ссылку ─────→ MediaDevice
+  ↑                                ↑
+AdvancedRemote                 TV, Projector</code></pre>
+<p>Оба пульта работают с обоими устройствами. Телевизор хранит громкость точно в процентах; проектор имеет 10 ступеней и округляет значение вниз до десятков. Например, команда 37% даёт 37% на телевизоре и 30% на проекторе. Контракт <code>MediaDevice</code> явно допускает это округление.</p>
+<pre><code>tv_remote = AdvancedRemote(TV())
+projector_remote = AdvancedRemote(Projector())
+tv_remote.mute()
+projector_remote.mute()</code></pre>
+<h2>Код и запуск</h2>
+<ul><li><a href="../remotes.py">remotes.py</a> — две стороны моста и задание.</li><li><a href="../__main__.py">__main__.py</a> — все сочетания готовых пультов и устройств.</li></ul>
+<p>Нужен Python 3.10+ и pytest 9+. В Codespaces pytest устанавливается автоматически. Из этой папки паттерна (её можно передать студенту отдельно):</p>
+<pre><code>python3 __main__.py
+pytest tests/test_example.py
+pytest tests/test_task.py</code></pre>
+<p><code>test_example.py</code> проверяет готовый пример, <code>test_task.py</code> — выполнение задания. До выполнения задания вторая проверка выдаёт ошибки; это ожидаемо.</p>
+<p>Из корня проекта по-прежнему работают <code>python3 -m patterns.bridge</code> и команда <code>pytest tests/test_bridge.py</code> (пример и задание вместе).</p>
+<h2>Самостоятельное задание</h2>
+<p><a href="../TASK.md">Условия, дополнительная практика и команды проверки</a>.</p>
+<h2>Углублённый разбор</h2>
+<p>Подготовьте объяснение по коду и ответьте на вопросы:</p>
+<ol><li>Где находятся две оси расширения? Какая ссылка соединяет их?</li><li>Какие классы пришлось бы добавить без моста при появлении радио?</li><li>Какие изменения нужны для третьего устройства и третьего пульта с мостом?</li><li>Почему в этом примере не нужны проверки <code>isinstance(device, TV)</code> внутри пультов?</li><li>Какова цена решения, если в системе всегда будет один пульт и одно устройство?</li></ol>
+<div class="scroll"><table><tr><th>Сравнение</th><th>Различие по задаче</th></tr><tr><td>Bridge и Adapter</td><td>Bridge заранее разделяет независимо изменяемые стороны; Adapter согласует уже существующие несовместимые интерфейсы</td></tr><tr><td>Bridge и Strategy</td><td>В этом Bridge независимо расширяются виды пультов и устройств; Strategy выделяет взаимозаменяемый алгоритм работы контекста</td></tr><tr><td>Bridge и наследование всех комбинаций</td><td>Композиция позволяет собрать сочетание пульта и устройства при создании объекта</td></tr></table></div>
+<p><strong>Преимущество:</strong> новый пульт не требует новых подклассов для каждого устройства. <strong>Недостаток:</strong> появляются дополнительный интерфейс и делегирование; при одной неизменяемой комбинации это может быть лишней сложностью.</p>
+<p>Важно объяснять назначение паттерна: сама по себе ссылка одного объекта на другой ещё не доказывает, что в программе применён Bridge.</p>
+<h2>Дополнительные материалы</h2>
+<ul><li><a href="../docs/diagrams.md">UML: классы и последовательность вызовов</a>.</li><li><a href="../docs/cheatsheet.html">HTML-шпаргалка с кодом и локальными диаграммами</a>.</li><li><a href="../bridge_limited_remote.py">Заготовка дополнительного задания</a>.</li><li><a href="../tests/test_example.py">Тесты примера</a>, <a href="../tests/test_task.py">задания</a> и <a href="../tests/test_extra.py">дополнительной практики</a>.</li></ul><h2>Самостоятельное задание</h2>
+<p>Самостоятельное изучение: в презентации Bridge указан в плане, его код и задание даны здесь как дополнительный материал.</p>
+<p>В <code>remotes.py</code> добавьте два класса, не меняя существующие пульты и устройства:</p>
+<ol><li><strong><code>Radio(MediaDevice)</code></strong>: изначально выключено, громкость 30. Реализуйте <code>set_power(enabled)</code>, свойство <code>volume</code> и <code>set_volume(percent)</code>. Радио хранит громкость точно в процентах; значения вне 0–100 вызывают <code>ValueError</code> и не изменяют предыдущее состояние. Обеспечьте поле <code>is_on</code>.</li><li><strong><code>PresentationRemote(Remote)</code></strong>: метод <code>start_presentation()</code> включает переданное устройство и устанавливает громкость 0 через интерфейс <code>MediaDevice</code>. Повторный вызов должен оставлять устройство включённым с нулевой громкостью.</li></ol>
+<p>Новый вид устройства должен работать с существующими пультами, а новый пульт — с существующими устройствами. Проверьте и сочетание двух новых классов. Демо автоматически добавит их к перебору комбинаций.</p>
+<h2>Проверка задания</h2>
+<p>Откройте терминал в этой папке паттерна и выполните:</p>
+<pre><code>pytest tests/test_task.py</code></pre>
+<p>Пока требуемые классы, метод или функция не добавлены, тесты завершаются <code>FAILED</code> с подсказкой. Задание выполнено, когда все проверки завершаются <code>PASSED</code>, без пропусков. Тесты менять нельзя. Работающий пример отдельно проверяется командой <code>pytest tests/test_example.py</code>.</p>
+<h2>Дополнительная практика</h2>
+<p><a href="../bridge_limited_remote.py">bridge_limited_remote.py</a> — Пульт с ограничением громкости: реализуйте <code>LimitedRemote.set_volume()</code> через интерфейс устройства. Полный контракт — в начале файла. Это дополнительное задание вне основной практики лекции.</p>
+<pre><code>pytest tests/test_extra.py</code></pre>
+<p>До реализации TODO эти отдельные тесты падают с <code>NotImplementedError</code>.</p>
+<h2 id="uml">UML-диаграммы</h2><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20470%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Ebridge%3A%20%D0%B4%D0%B8%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0%20%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22470%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22350%2C100%20620%2C100%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22485.0%22%20y%3D%2290.0%22%20text-anchor%3D%22middle%22%3Edevice%3C%2Ftext%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22205%2C300%20205%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22575%2C300%20575%2C210%20770%2C210%20770%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22855%2C300%20855%2C240%20770%2C240%20770%2C170%22%20marker-end%3D%22url%28%23inherit%29%22%2F%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2260%22%20y%3D%2230%22%20width%3D%22290%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22205.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ERemote%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22205.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3EAbstraction%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M60%2092%20H350%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2274%22%20y%3D%22116%22%3Edevice%3A%20MediaDevice%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2274%22%20y%3D%22137%22%3Etoggle_power%28%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2274%22%20y%3D%22158%22%3Eset_volume%28percent%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22620%22%20y%3D%2230%22%20width%3D%22300%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22770.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EMediaDevice%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22770.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3EImplementor%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M620%2092%20H920%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22634%22%20y%3D%22116%22%3Eset_power%28enabled%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22634%22%20y%3D%22137%22%3Eset_volume%28percent%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22634%22%20y%3D%22158%22%3Evolume%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2260%22%20y%3D%22300%22%20width%3D%22290%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22205.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EAdvancedRemote%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22205.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3ERefinedAbstraction%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M60%20362%20H350%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2274%22%20y%3D%22386%22%3Emute%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22460%22%20y%3D%22300%22%20width%3D%22230%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22575.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ETV%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22575.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3EConcreteImplementor%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M460%20362%20H690%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22474%22%20y%3D%22386%22%3E%D0%B3%D1%80%D0%BE%D0%BC%D0%BA%D0%BE%D1%81%D1%82%D1%8C%20%D0%B2%20%D0%BF%D1%80%D0%BE%D1%86%D0%B5%D0%BD%D1%82%D0%B0%D1%85%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22740%22%20y%3D%22300%22%20width%3D%22230%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22855.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EProjector%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22855.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3EConcreteImplementor%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M740%20362%20H970%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22754%22%20y%3D%22386%22%3E%D0%B3%D1%80%D0%BE%D0%BC%D0%BA%D0%BE%D1%81%D1%82%D1%8C%20%D0%BF%D0%BE%20%D1%81%D1%82%D1%83%D0%BF%D0%B5%D0%BD%D1%8F%D0%BC%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: диаграмма классов"></div><figcaption>UML: диаграмма классов</figcaption></figure><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20290%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Ebridge%3A%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D1%8C%20%D0%B2%D1%8B%D0%B7%D0%BE%D0%B2%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22290%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2289.66666666666666%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M166.66666666666666%2090%20V270%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22166.66666666666666%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EClient%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22423.0%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M500.0%2090%20V270%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22500.0%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Eremote%3C%2Ftext%3E%0A%3Ctext%20x%3D%22500.0%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EAdvancedRemote%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22756.3333333333334%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M833.3333333333334%2090%20V270%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22833.3333333333334%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Edevice%3C%2Ftext%3E%0A%3Ctext%20x%3D%22833.3333333333334%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ETV%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M166.66666666666666%20145%20H500.0%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22333.3333333333333%22%20y%3D%22132%22%20text-anchor%3D%22middle%22%3E1.%20mute%28%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M500.0%20210%20H833.3333333333334%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22666.6666666666667%22%20y%3D%22197%22%20text-anchor%3D%22middle%22%3E2.%20set_volume%280%29%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: последовательность вызовов"></div><figcaption>UML: последовательность вызовов</figcaption></figure>
+<h2 id="code">Код и дополнительная практика</h2>
+<p>Заготовка с TODO проверяется отдельно от работающих примеров.
+Команды и порядок выполнения — в <a href="../TASK.md">описании задания этого паттерна</a>.</p>
+<details open><summary>Реализация: remotes.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Bridge: виды пультов и виды устройств развиваются независимо.
+
+Remote — Abstraction; AdvancedRemote — RefinedAbstraction;
+MediaDevice — Implementor; TV, Projector — ConcreteImplementor.
+&quot;&quot;&quot;
+
+from abc import ABC, abstractmethod
+
+
+class MediaDevice(ABC):
+    def __init__(self) -&gt; None:
+        self.is_on = False
+
+    @abstractmethod
+    def set_power(self, enabled: bool) -&gt; None:
+        &quot;&quot;&quot;Установить питание.&quot;&quot;&quot;
+
+    @property
+    @abstractmethod
+    def volume(self) -&gt; int:
+        &quot;&quot;&quot;Текущая громкость в процентах.&quot;&quot;&quot;
+
+    @abstractmethod
+    def set_volume(self, percent: int) -&gt; None:
+        &quot;&quot;&quot;Установить громкость 0–100; устройство может округлять её вниз.&quot;&quot;&quot;
+
+
+class TV(MediaDevice):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self._volume = 30
+
+    def set_power(self, enabled: bool) -&gt; None:
+        self.is_on = enabled
+
+    @property
+    def volume(self) -&gt; int:
+        return self._volume
+
+    def set_volume(self, percent: int) -&gt; None:
+        if not 0 &lt;= percent &lt;= 100:
+            raise ValueError(&quot;Громкость должна быть от 0 до 100&quot;)
+        self._volume = percent
+
+
+class Projector(MediaDevice):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self._volume_steps = 3
+
+    def set_power(self, enabled: bool) -&gt; None:
+        self.is_on = enabled
+
+    @property
+    def volume(self) -&gt; int:
+        return self._volume_steps * 10
+
+    def set_volume(self, percent: int) -&gt; None:
+        if not 0 &lt;= percent &lt;= 100:
+            raise ValueError(&quot;Громкость должна быть от 0 до 100&quot;)
+        self._volume_steps = percent // 10
+
+
+class Remote:
+    def __init__(self, device: MediaDevice) -&gt; None:
+        self.device = device
+
+    def toggle_power(self) -&gt; None:
+        self.device.set_power(not self.device.is_on)
+
+    def set_volume(self, percent: int) -&gt; None:
+        self.device.set_volume(percent)
+
+
+class AdvancedRemote(Remote):
+    def mute(self) -&gt; None:
+        self.device.set_volume(0)
+
+
+# САМОСТОЯТЕЛЬНОЕ ЗАДАНИЕ:
+# 1. Добавьте Radio(MediaDevice): начальная громкость 30, питание выключено.
+#    Громкость хранится точно в процентах; за пределами 0–100 — ValueError.
+# 2. Добавьте PresentationRemote(Remote) с start_presentation():
+#    включить переданное устройство и установить громкость 0.
+# 3. Проверьте новый пульт со всеми устройствами, а Radio — со всеми пультами.
+#    Существующие классы пультов и устройств изменять не нужно.
+# Условия и команды проверки: TASK.md; тесты: tests/test_task.py.
+</code></pre></details><details open><summary>Демонстрация: __main__.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>if __package__:
+    from . import remotes
+else:
+    import remotes
+
+
+def demo() -&gt; None:
+    print(&quot;=== Bridge (самостоятельно): виды пультов × виды устройств ===&quot;)
+    device_types = [remotes.TV, remotes.Projector]
+    remote_types = [remotes.Remote, remotes.AdvancedRemote]
+    radio = getattr(remotes, &quot;Radio&quot;, None)
+    presentation_remote = getattr(remotes, &quot;PresentationRemote&quot;, None)
+    if radio is not None:
+        device_types.append(radio)
+    if presentation_remote is not None:
+        remote_types.append(presentation_remote)
+    for device_type in device_types:
+        for remote_type in remote_types:
+            device = device_type()
+            remote = remote_type(device)
+            remote.toggle_power()
+            remote.set_volume(37)
+            print(f&quot;{remote_type.__name__} + {device_type.__name__}: питание={device.is_on}, звук={device.volume}%&quot;)
+            if isinstance(remote, remotes.AdvancedRemote):
+                remote.mute()
+                print(f&quot;  mute(): звук={device.volume}%&quot;)
+            if presentation_remote is not None and isinstance(remote, presentation_remote):
+                remote.start_presentation()
+                print(f&quot;  start_presentation(): питание={device.is_on}, звук={device.volume}%&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    demo()
+</code></pre></details><details open><summary>Дополнительное задание: bridge_limited_remote.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Bridge — самостоятельно: пульт с ограничением громкости.
+
+Реализуйте LimitedRemote.set_volume(): допустимы команды 0–100,
+но устройству передаётся не больше limit. Некорректная команда вызывает
+ValueError и не изменяет громкость. Пульт не проверяет конкретный тип устройства.
+TV и Projector из готового примера менять нельзя.
+
+Из папки паттерна: pytest tests/test_extra.py
+&quot;&quot;&quot;
+
+from .remotes import MediaDevice, Remote
+
+
+class LimitedRemote(Remote):
+    def __init__(self, device: MediaDevice, limit: int = 40) -&gt; None:
+        super().__init__(device)
+        if not 0 &lt;= limit &lt;= 100:
+            raise ValueError(&quot;Ограничение должно быть от 0 до 100&quot;)
+        self.limit = limit
+
+    def set_volume(self, percent: int) -&gt; None:
+        # TODO: проверьте команду, ограничьте значение и делегируйте устройству.
+        raise NotImplementedError(&quot;Реализуйте ограничение громкости на стороне пультов&quot;)
+</code></pre></details><details open><summary>Тесты: tests/test_example.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+
+from .. import remotes
+
+
+class BridgeTests(unittest.TestCase):
+    def test_all_remote_and_device_combinations(self):
+        for remote_type in (remotes.Remote, remotes.AdvancedRemote):
+            for device_type in (remotes.TV, remotes.Projector):
+                with self.subTest(remote=remote_type.__name__, device=device_type.__name__):
+                    device = device_type()
+                    remote = remote_type(device)
+                    self.assertIs(remote.device, device)
+                    self.assertFalse(device.is_on)
+                    remote.toggle_power()
+                    self.assertTrue(device.is_on)
+                    remote.set_volume(37)
+                    self.assertEqual(device.volume, 37 if device_type is remotes.TV else 30)
+                    remote.toggle_power()
+                    self.assertFalse(device.is_on)
+
+    def test_mute_works_with_every_implementation(self):
+        for device_type in (remotes.TV, remotes.Projector):
+            device = device_type()
+            remote = remotes.AdvancedRemote(device)
+            remote.toggle_power()
+            remote.set_volume(80)
+            remote.mute()
+            self.assertEqual(device.volume, 0)
+            self.assertTrue(device.is_on)
+
+    def test_devices_check_volume_bounds(self):
+        for device_type in (remotes.TV, remotes.Projector):
+            device = device_type()
+            for volume in (0, 100):
+                device.set_volume(volume)
+                self.assertEqual(device.volume, volume)
+            for volume in (-1, 101):
+                with self.assertRaises(ValueError):
+                    device.set_volume(volume)
+                self.assertEqual(device.volume, 100)
+
+</code></pre></details><details open><summary>Тесты: tests/test_task.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+
+from .. import remotes
+
+
+class BridgeTaskTests(unittest.TestCase):
+    def require(self, name):
+        cls = getattr(remotes, name, None)
+        self.assertIsNotNone(
+            cls, f&quot;САМОСТОЯТЕЛЬНО: добавьте {name} в remotes.py (см. TASK.md)&quot;
+        )
+        return cls
+
+    def test_radio_works_with_existing_remotes(self):
+        radio_type = self.require(&quot;Radio&quot;)
+        self.assertTrue(issubclass(radio_type, remotes.MediaDevice))
+        for remote_type in (remotes.Remote, remotes.AdvancedRemote):
+            radio = radio_type()
+            self.assertFalse(radio.is_on)
+            self.assertEqual(radio.volume, 30)
+            remote = remote_type(radio)
+            remote.toggle_power()
+            self.assertTrue(radio.is_on)
+            remote.set_volume(37)
+            self.assertEqual(radio.volume, 37)
+            remote.toggle_power()
+            self.assertFalse(radio.is_on)
+            if isinstance(remote, remotes.AdvancedRemote):
+                remote.mute()
+                self.assertEqual(radio.volume, 0)
+
+    def test_radio_validates_volume(self):
+        radio = self.require(&quot;Radio&quot;)()
+        for volume in (0, 100):
+            radio.set_volume(volume)
+            self.assertEqual(radio.volume, volume)
+        for volume in (-1, 101):
+            with self.assertRaises(ValueError):
+                radio.set_volume(volume)
+            self.assertEqual(radio.volume, 100)
+
+    def test_presentation_remote_works_with_existing_devices(self):
+        remote_type = self.require(&quot;PresentationRemote&quot;)
+        self.assertTrue(issubclass(remote_type, remotes.Remote))
+        for device_type in (remotes.TV, remotes.Projector):
+            device = device_type()
+            remote = remote_type(device)
+            remote.set_volume(70)
+            remote.start_presentation()
+            remote.start_presentation()
+            self.assertTrue(device.is_on)
+            self.assertEqual(device.volume, 0)
+            remote.toggle_power()
+            self.assertFalse(device.is_on)
+
+    def test_new_remote_and_new_device_work_together(self):
+        radio = self.require(&quot;Radio&quot;)()
+        remote = self.require(&quot;PresentationRemote&quot;)(radio)
+        remote.start_presentation()
+        self.assertTrue(radio.is_on)
+        self.assertEqual(radio.volume, 0)
+</code></pre></details><details open><summary>Тесты: tests/test_extra.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+
+from ..bridge_limited_remote import LimitedRemote
+from ..remotes import Projector, TV
+
+
+class LimitedRemoteTests(unittest.TestCase):
+    def test_new_remote_works_with_both_device_implementations(self):
+        for device_type, expected in ((TV, 55), (Projector, 50)):
+            device = device_type()
+            remote = LimitedRemote(device, limit=55)
+            remote.toggle_power()
+            self.assertTrue(device.is_on)
+            remote.set_volume(90)
+            self.assertEqual(device.volume, expected)
+            remote.set_volume(20)
+            self.assertEqual(device.volume, 20)
+            remote.toggle_power()
+            self.assertFalse(device.is_on)
+
+    def test_limit_can_be_zero_or_one_hundred(self):
+        for limit in (0, 100):
+            device = TV()
+            LimitedRemote(device, limit).set_volume(100)
+            self.assertEqual(device.volume, limit)
+
+    def test_invalid_command_does_not_change_device(self):
+        device = TV()
+        remote = LimitedRemote(device)
+        for invalid in (-1, 101, float(&quot;nan&quot;)):
+            with self.assertRaises(ValueError):
+                remote.set_volume(invalid)
+            self.assertEqual(device.volume, 30)
+</code></pre></details>
+<footer>Страница собрана из исходников проекта.
+После изменений выполните <code>python3 tools/build_cheatsheets.py</code>.
+Диаграммы и код встроены в этот HTML; для перехода к другим паттернам сохраните папку проекта целиком.</footer>
+</main><script>
+document.querySelectorAll('.copy').forEach(button => {
+  button.addEventListener('click', async () => {
+    const code = button.parentElement.querySelector('code');
+    const status = button.nextElementSibling;
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      status.textContent = 'Скопировано';
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(code);
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+      status.textContent = 'Код выделен. Нажмите Ctrl+C или ⌘C.';
+    }
+  });
+});
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.dataset.wasOpen = String(item.open); item.open = true;
+  });
+});
+window.addEventListener('afterprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.open = item.dataset.wasOpen === 'true';
+  });
+});
+</script></body></html>

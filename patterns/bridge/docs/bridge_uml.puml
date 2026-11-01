@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+Remote --> MediaDevice : device
+Remote <|-- AdvancedRemote
+MediaDevice <|-- TV
+MediaDevice <|-- Projector
+class Remote {
+  device: MediaDevice
+  toggle_power()
+  set_volume(percent)
+}
+abstract class MediaDevice {
+  set_power(enabled)
+  set_volume(percent)
+  volume
+}
+class AdvancedRemote {
+  mute()
+}
+class TV {
+  громкость в процентах
+}
+class Projector {
+  громкость по ступеням
+}
+@enduml
+
+@startuml
+participant "Client" as C
+participant "remote: AdvancedRemote" as R
+participant "device: TV" as D
+C -> R: mute()
+R -> D: set_volume(0)
+@enduml

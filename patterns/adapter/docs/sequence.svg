@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" role="img" aria-labelledby="title"><title id="title">adapter: последовательность вызовов</title><style>text{font-family:system-ui,-apple-system,sans-serif;fill:#173443;font-size:16px}.role{font-size:13px;fill:#556d77}.method{font:14px ui-monospace,monospace}.edge{fill:none;stroke:#346678;stroke-width:2}.box{fill:#fff;stroke:#346678;stroke-width:1.5}</style><rect width="1000" height="420" fill="#f8fbfc"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#346678" stroke-width="1.5"/></marker><marker id="inherit" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker><marker id="diamond" markerWidth="12" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1 6 L6 1 L11 6 L6 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker></defs>
+<rect class="box" x="89.66666666666666" y="20" width="154" height="70" rx="5"/>
+<path class="edge" d="M166.66666666666666 90 V400" stroke-dasharray="6 6"/>
+<text x="166.66666666666666" y="49" text-anchor="middle" style="font-size:13px">Client</text>
+<rect class="box" x="423.0" y="20" width="154" height="70" rx="5"/>
+<path class="edge" d="M500.0 90 V400" stroke-dasharray="6 6"/>
+<text x="500.0" y="49" text-anchor="middle" style="font-size:13px">LampObjectAdapter</text>
+<rect class="box" x="756.3333333333334" y="20" width="154" height="70" rx="5"/>
+<path class="edge" d="M833.3333333333334 90 V400" stroke-dasharray="6 6"/>
+<text x="833.3333333333334" y="49" text-anchor="middle" style="font-size:13px">LegacyLamp</text>
+<path class="edge" d="M166.66666666666666 145 H500.0" marker-end="url(#arrow)"/>
+<text class="method" x="333.3333333333333" y="132" text-anchor="middle">1. set_power(True)</text>
+<path class="edge" d="M500.0 210 H833.3333333333334" marker-end="url(#arrow)"/>
+<text class="method" x="666.6666666666667" y="197" text-anchor="middle">2. switch_on()</text>
+<path class="edge" d="M166.66666666666666 275 H500.0" marker-end="url(#arrow)"/>
+<text class="method" x="333.3333333333333" y="262" text-anchor="middle">3. set_power(False)</text>
+<path class="edge" d="M500.0 340 H833.3333333333334" marker-end="url(#arrow)"/>
+<text class="method" x="666.6666666666667" y="327" text-anchor="middle">4. switch_off()</text>
+</svg>

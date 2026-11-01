@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+Client --> HomeFacade
+HomeFacade --> Curtains
+HomeFacade --> Lighting
+HomeFacade --> Projector
+HomeFacade --> SoundSystem
+class Client {
+  home.start_movie()
+}
+class HomeFacade {
+  start_movie()
+  end_movie()
+}
+class Curtains {
+  close()
+  open()
+}
+class Lighting {
+  set_brightness(percent)
+}
+class Projector {
+  turn_on(source)
+  turn_off()
+}
+class SoundSystem {
+  turn_on(volume)
+  turn_off()
+}
+@enduml
+
+@startuml
+participant "Client" as C
+participant "home: HomeFacade" as H
+participant "curtains: Curtains" as S
+participant "light: Lighting" as L
+participant "projector: Projector" as P
+participant "sound: SoundSystem" as A
+C -> H: start_movie()
+H -> S: close()
+H -> L: set_brightness(20)
+H -> P: turn_on("HDMI 1")
+H -> A: turn_on(35)
+@enduml

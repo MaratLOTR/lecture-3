@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+Component <|-- Device
+Component <|-- DeviceGroup
+DeviceGroup o-- Component : children
+abstract class Component {
+  turn_on()
+  turn_off()
+  describe()
+}
+class Device {
+  is_on
+  turn_on()
+  turn_off()
+}
+class DeviceGroup {
+  children: Component[]
+  add(child)
+  remove(child)
+  turn_on()
+  turn_off()
+}
+@enduml
+
+@startuml
+participant "Client" as C
+participant "house: DeviceGroup" as H
+participant "room: DeviceGroup" as R
+participant "lamp: Device" as L
+participant "tv: Device" as T
+C -> H: turn_off()
+H -> R: turn_off()
+R -> L: turn_off()
+R -> T: turn_off()
+@enduml

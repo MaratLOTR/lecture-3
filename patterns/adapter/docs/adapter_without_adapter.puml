@@ -1,0 +1,66 @@
+@startuml
+allowmixing
+top to bottom direction
+
+title Без адаптера: интерфейсы не совпадают
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundcorner 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 18
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor white
+skinparam classHeaderBackgroundColor white
+skinparam classBorderColor black
+skinparam rectangleBackgroundColor white
+skinparam rectangleBorderColor black
+skinparam noteBackgroundColor white
+skinparam noteBorderColor black
+skinparam ArrowColor black
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+
+hide circle
+
+rectangle "Client\nset_all_power()\n\nВызывает device.set_power(enabled)" as Client
+
+interface Switchable <<interface>> {
+    +set_power(enabled: bool): None
+}
+
+class ModernLight {
+    +set_power(enabled: bool): None
+}
+
+class LegacyLamp <<Adaptee>> {
+    +switch_on(): None
+    +switch_off(): None
+}
+
+Client ..> Switchable : ожидает этот интерфейс
+Switchable <|.. ModernLight
+
+' Красная связь показывает ошибочную попытку, а не рабочую зависимость.
+Client -[#B3261E,dashed]-> LegacyLamp : <color:#B3261E><b>× нет set_power()</b></color>
+
+Switchable -[hidden]right- LegacyLamp
+
+note bottom of ModernLight
+    set_all_power([ModernLight()], True)
+    Работает: метод set_power() есть.
+end note
+
+note bottom of LegacyLamp #FFF2F2
+    set_all_power([LegacyLamp()], True)
+    <color:#B3261E><b>AttributeError: нет метода set_power</b></color>
+    Лампа понимает только switch_on() и switch_off().
+end note
+
+legend bottom
+    Красная связь: попытка подключения, которая завершится ошибкой.
+    Для работы с неизменным клиентом нужен перевод интерфейса.
+endlegend
+
+@enduml

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 710" role="img" aria-labelledby="title"><title id="title">adapter: диаграмма классов</title><style>text{font-family:system-ui,-apple-system,sans-serif;fill:#173443;font-size:16px}.role{font-size:13px;fill:#556d77}.method{font:14px ui-monospace,monospace}.edge{fill:none;stroke:#346678;stroke-width:2}.box{fill:#fff;stroke:#346678;stroke-width:1.5}</style><rect width="1000" height="710" fill="#f8fbfc"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#346678" stroke-width="1.5"/></marker><marker id="inherit" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker><marker id="diamond" markerWidth="12" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1 6 L6 1 L11 6 L6 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker></defs>
+<polyline class="edge" points="165,300 165,220 465,220 465,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="500,300 500,240 465,240 465,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="640,370 720,370" marker-end="url(#arrow)"/>
+<text class="role" x="680.0" y="360.0" text-anchor="middle">lamp</text>
+<polyline class="edge" points="690,100 600,100" marker-end="url(#arrow)"/>
+<rect class="box" x="330" y="30" width="270" height="140" rx="5"/>
+<text x="465.0" y="58" text-anchor="middle" font-weight="650">Switchable</text>
+<text class="role" x="465.0" y="80" text-anchor="middle">Target · интерфейс</text>
+<path class="edge" d="M330 92 H600"/>
+<text class="method" x="344" y="116">set_power(enabled)</text>
+<rect class="box" x="690" y="30" width="270" height="140" rx="5"/>
+<text x="825.0" y="58" text-anchor="middle" font-weight="650">Client</text>
+<text class="role" x="825.0" y="80" text-anchor="middle">клиентская функция</text>
+<path class="edge" d="M690 92 H960"/>
+<text class="method" x="704" y="116">set_all_power()</text>
+<rect class="box" x="30" y="300" width="270" height="140" rx="5"/>
+<text x="165.0" y="328" text-anchor="middle" font-weight="650">ModernLight</text>
+<text class="role" x="165.0" y="350" text-anchor="middle">совместимое устройство</text>
+<path class="edge" d="M30 362 H300"/>
+<text class="method" x="44" y="386">set_power(enabled)</text>
+<rect class="box" x="360" y="300" width="280" height="140" rx="5"/>
+<text x="500.0" y="328" text-anchor="middle" font-weight="650">LampObjectAdapter</text>
+<text class="role" x="500.0" y="350" text-anchor="middle">Adapter</text>
+<path class="edge" d="M360 362 H640"/>
+<text class="method" x="374" y="386">lamp: LegacyLamp</text>
+<text class="method" x="374" y="407">set_power(enabled)</text>
+<rect class="box" x="720" y="300" width="250" height="140" rx="5"/>
+<text x="845.0" y="328" text-anchor="middle" font-weight="650">LegacyLamp</text>
+<text class="role" x="845.0" y="350" text-anchor="middle">Adaptee</text>
+<path class="edge" d="M720 362 H970"/>
+<text class="method" x="734" y="386">switch_on()</text>
+<text class="method" x="734" y="407">switch_off()</text>
+<polyline class="edge" points="500,530 325,530 325,190 465,190 465,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="640,600 845,600 845,440" marker-end="url(#inherit)"/>
+<text class="role" x="845" y="630" text-anchor="middle">наследование API и состояния</text>
+<rect class="box" x="360" y="530" width="280" height="140" rx="5"/>
+<text x="500" y="558" text-anchor="middle" font-weight="650">LampClassAdapter</text>
+<text class="role" x="500" y="580" text-anchor="middle">Adapter · наследование</text>
+<path class="edge" d="M360 592 H640"/>
+<text class="method" x="374" y="616">set_power(enabled)</text>
+<text class="role" x="374" y="644">self.switch_on() / switch_off()</text>
+</svg>

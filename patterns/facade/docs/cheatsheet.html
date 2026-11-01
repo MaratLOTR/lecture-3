@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Facade — Фасад · Умный дом</title><link rel="icon" href="data:,"><style>
+:root{color-scheme:light;font:17px/1.65 system-ui,-apple-system,sans-serif;color:#203640;background:#fafbf9}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:32px 24px 70px}
+nav{display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid #ccd7da;padding-bottom:18px}
+a{color:#176579;text-underline-offset:3px}nav [aria-current]{font-weight:750;color:#203640}
+h1{font:700 clamp(30px,5vw,48px)/1.2 Georgia,serif;margin:40px 0 26px}
+h2{font:650 29px/1.3 Georgia,serif;margin:44px 0 18px}h3{margin:25px 0 12px}
+p,li{max-width:78ch}li{margin:6px 0}code{font:0.88em ui-monospace,monospace}
+pre{padding:18px;background:#edf2f3;border:1px solid #d7e1e4;overflow:auto;line-height:1.6}
+pre code{white-space:pre}p code,li code,td code{overflow-wrap:anywhere}
+.scroll,.diagram{overflow:auto}table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #ccd7da}th{background:#eef3f3}
+.diagram img{display:block;width:100%;min-width:700px;height:auto;border:1px solid #d7e1e4}
+figure{margin:20px 0 30px}figcaption{margin-top:8px;color:#526970;font-size:15px}
+details{margin:18px 0;border-top:1px solid #ccd7da;padding-top:14px}summary{cursor:pointer;font-weight:650}
+button{font:inherit;font-size:14px;padding:6px 12px;background:#fff;border:1px solid #78939e;cursor:pointer;margin-top:14px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #257f99;outline-offset:4px}
+.status{margin-left:12px;font-size:14px}.note{border-left:4px solid #3b8190;padding:10px 18px;background:#edf4f3}
+footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#526970}
+@media(max-width:600px){main{padding:20px 15px}pre{font-size:14px}h2{font-size:25px}}
+@media print{nav,button,.status{display:none}main{max-width:none;padding:0}body{background:#fff}pre{white-space:pre-wrap;overflow:visible;font-size:10px}pre code{white-space:pre-wrap}details{break-inside:avoid}.diagram img{min-width:0}h2,h3{break-after:avoid}}
+</style></head>
+<body><main><nav aria-label="Паттерны"><a href="../../adapter/docs/cheatsheet.html">Adapter — Адаптер</a><a href="../../facade/docs/cheatsheet.html" aria-current="page">Facade — Фасад</a><a href="../../composite/docs/cheatsheet.html">Composite — Компоновщик</a><a href="../../bridge/docs/cheatsheet.html">Bridge — Мост · самостоятельно</a></nav>
+<p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
+Bridge — дополнительный раздел для самостоятельного изучения.</p>
+<h1>Facade — Фасад</h1>
+<p>Пример: слайды 22–27; задание: слайд 29 презентации «Лекция 3».</p>
+<h2>Проблема</h2>
+<p>Чтобы посмотреть фильм, клиент должен закрыть шторы, приглушить свет, включить проектор с правильным источником и настроить звук. Без фасада каждый клиент повторяет последовательность и знает интерфейсы четырёх подсистем:</p>
+<pre><code>curtains.close()
+lighting.set_brightness(20)
+projector.turn_on(&quot;HDMI 1&quot;)
+sound.turn_on(35)</code></pre>
+<h2>Решение и роли</h2>
+<p><code>HomeFacade.start_movie()</code> выражает намерение пользователя одним вызовом. Метод <code>end_movie()</code> выключает проектор и звук, возвращает яркость 100% и открывает шторы. Он устанавливает заранее определённое состояние, а не восстанавливает произвольные прежние настройки.</p>
+<div class="scroll"><table><tr><th>Роль</th><th>Участник</th></tr><tr><td>Facade — высокоуровневый интерфейс</td><td><code>HomeFacade</code></td></tr><tr><td>Подсистемы</td><td><code>Lighting</code>, <code>Curtains</code>, <code>Projector</code>, <code>SoundSystem</code></td></tr><tr><td>Client</td><td>код демонстрации, вызывающий <code>home.start_movie()</code></td></tr></table></div>
+<pre><code>Клиент → HomeFacade.start_movie()
+           ├─ Curtains.close()
+           ├─ Lighting.set_brightness(20)
+           ├─ Projector.turn_on(&quot;HDMI 1&quot;)
+           └─ SoundSystem.turn_on(35)</code></pre>
+<p>Фасад получает экземпляры подсистем через конструктор. Подсистемы не знают о фасаде; их по-прежнему можно использовать напрямую для нестандартных сценариев.</p>
+<h2>Код и запуск</h2>
+<ul><li><a href="../home.py">home.py</a> — четыре подсистемы и фасад.</li><li><a href="../__main__.py">__main__.py</a> — начало и завершение просмотра фильма.</li></ul>
+<p>Нужен Python 3.10+ и pytest 9+. В Codespaces pytest устанавливается автоматически. Из этой папки паттерна (её можно передать студенту отдельно):</p>
+<pre><code>python3 __main__.py
+pytest tests/test_example.py
+pytest tests/test_task.py</code></pre>
+<p><code>test_example.py</code> проверяет готовый пример, <code>test_task.py</code> — выполнение задания. До выполнения задания вторая проверка выдаёт ошибки; это ожидаемо.</p>
+<p>Из корня проекта по-прежнему работают <code>python3 -m patterns.facade</code> и команда <code>pytest tests/test_facade.py</code> (пример и задание вместе).</p>
+<h2>Задание</h2>
+<p><a href="../TASK.md">Условия, дополнительная практика и команды проверки</a>.</p>
+<h2>Применимость и ограничения</h2>
+<p>Фасад полезен, когда клиентам нужен небольшой набор типовых операций сложной подсистемы. Он уменьшает число зависимостей клиента и собирает порядок действий в одном месте. Если включить в него все возможные сценарии, класс может стать слишком большим. Фасад сам по себе не обеспечивает откат при сбое одной из подсистем.</p>
+<p><strong>Вопрос:</strong> чем <code>start_movie()</code> отличается по назначению от <code>LampObjectAdapter.set_power()</code>?</p>
+<h2>Дополнительные материалы</h2>
+<ul><li><a href="../docs/diagrams.md">UML: классы и последовательность вызовов</a>.</li><li><a href="../docs/cheatsheet.html">HTML-шпаргалка с кодом и локальными диаграммами</a>.</li><li><a href="../facade_night_mode.py">Заготовка дополнительного задания</a>.</li><li><a href="../tests/test_example.py">Тесты примера</a>, <a href="../tests/test_task.py">задания</a> и <a href="../tests/test_extra.py">дополнительной практики</a>.</li></ul><h2>Задание</h2>
+<p>Практика со слайда 29 презентации «Лекция 3». Номера слайдов здесь и в README — фактический порядок в файле.</p>
+<p>Добавьте <strong>в класс <code>HomeFacade</code></strong> метод <code>leave_home()</code> — сценарий «Ушёл из дома». После вызова:</p>
+<ul><li>яркость освещения равна 0;</li><li>шторы закрыты;</li><li>проектор выключен, источник сброшен в <code>None</code>;</li><li>звук выключен, громкость равна 0.</li></ul>
+<p>Используйте публичные методы подсистем, не присваивайте их полям значения напрямую. Метод должен работать и сразу после создания дома, и после <code>start_movie()</code>. Повторный вызов должен сохранять то же состояние.</p>
+<p>Демо вызовет новый сценарий после добавления метода.</p>
+<h2>Проверка задания</h2>
+<p>Откройте терминал в этой папке паттерна и выполните:</p>
+<pre><code>pytest tests/test_task.py</code></pre>
+<p>Пока требуемые классы, метод или функция не добавлены, тесты завершаются <code>FAILED</code> с подсказкой. Задание выполнено, когда все проверки завершаются <code>PASSED</code>, без пропусков. Тесты менять нельзя. Работающий пример отдельно проверяется командой <code>pytest tests/test_example.py</code>.</p>
+<h2>Дополнительная практика</h2>
+<p><a href="../facade_night_mode.py">facade_night_mode.py</a> — Ночной сценарий: реализуйте <code>NightModeFacade.start()</code> через публичные методы подсистем. Полный контракт — в начале файла. Это дополнительное задание вне основной практики лекции.</p>
+<pre><code>pytest tests/test_extra.py</code></pre>
+<p>До реализации TODO эти отдельные тесты падают с <code>NotImplementedError</code>.</p>
+<h2 id="uml">UML-диаграммы</h2><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20470%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Efacade%3A%20%D0%B4%D0%B8%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0%20%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22470%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22280%2C100%20370%2C100%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C170%20500%2C235%20130%2C235%20130%2C300%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C170%20500%2C235%20375%2C235%20375%2C300%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C170%20500%2C235%20620%2C235%20620%2C300%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Cpolyline%20class%3D%22edge%22%20points%3D%22500%2C170%20500%2C235%20867%2C235%20867%2C300%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2230%22%20y%3D%2230%22%20width%3D%22250%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22155.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EClient%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22155.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3E%D0%BA%D0%BB%D0%B8%D0%B5%D0%BD%D1%82%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M30%2092%20H280%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2244%22%20y%3D%22116%22%3Ehome.start_movie%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22370%22%20y%3D%2230%22%20width%3D%22260%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22500.0%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EHomeFacade%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22500.0%22%20y%3D%2280%22%20text-anchor%3D%22middle%22%3EFacade%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M370%2092%20H630%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22384%22%20y%3D%22116%22%3Estart_movie%28%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22384%22%20y%3D%22137%22%3Eend_movie%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%2220%22%20y%3D%22300%22%20width%3D%22220%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22130.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ECurtains%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22130.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3E%D0%BF%D0%BE%D0%B4%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M20%20362%20H240%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2234%22%20y%3D%22386%22%3Eclose%28%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%2234%22%20y%3D%22407%22%3Eopen%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22265%22%20y%3D%22300%22%20width%3D%22220%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22375.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ELighting%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22375.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3E%D0%BF%D0%BE%D0%B4%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M265%20362%20H485%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22279%22%20y%3D%22386%22%3Eset_brightness%28percent%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22510%22%20y%3D%22300%22%20width%3D%22220%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22620.0%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3EProjector%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22620.0%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3E%D0%BF%D0%BE%D0%B4%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M510%20362%20H730%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22524%22%20y%3D%22386%22%3Eturn_on%28source%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22524%22%20y%3D%22407%22%3Eturn_off%28%29%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22755%22%20y%3D%22300%22%20width%3D%22225%22%20height%3D%22140%22%20rx%3D%225%22%2F%3E%0A%3Ctext%20x%3D%22867.5%22%20y%3D%22328%22%20text-anchor%3D%22middle%22%20font-weight%3D%22650%22%3ESoundSystem%3C%2Ftext%3E%0A%3Ctext%20class%3D%22role%22%20x%3D%22867.5%22%20y%3D%22350%22%20text-anchor%3D%22middle%22%3E%D0%BF%D0%BE%D0%B4%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M755%20362%20H980%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22769%22%20y%3D%22386%22%3Eturn_on%28volume%29%3C%2Ftext%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22769%22%20y%3D%22407%22%3Eturn_off%28%29%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: диаграмма классов"></div><figcaption>UML: диаграмма классов</figcaption></figure><figure><div class="diagram"><img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201000%20485%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%3Ctitle%20id%3D%22title%22%3Efacade%3A%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D1%8C%20%D0%B2%D1%8B%D0%B7%D0%BE%D0%B2%D0%BE%D0%B2%3C%2Ftitle%3E%3Cstyle%3Etext%7Bfont-family%3Asystem-ui%2C-apple-system%2Csans-serif%3Bfill%3A%23173443%3Bfont-size%3A16px%7D.role%7Bfont-size%3A13px%3Bfill%3A%23556d77%7D.method%7Bfont%3A14px%20ui-monospace%2Cmonospace%7D.edge%7Bfill%3Anone%3Bstroke%3A%23346678%3Bstroke-width%3A2%7D.box%7Bfill%3A%23fff%3Bstroke%3A%23346678%3Bstroke-width%3A1.5%7D%3C%2Fstyle%3E%3Crect%20width%3D%221000%22%20height%3D%22485%22%20fill%3D%22%23f8fbfc%22%2F%3E%3Cdefs%3E%3Cmarker%20id%3D%22arrow%22%20markerWidth%3D%2210%22%20markerHeight%3D%2210%22%20refX%3D%229%22%20refY%3D%225%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L9%205%20L1%209%22%20fill%3D%22none%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22inherit%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%2211%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%201%20L11%206%20L1%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3Cmarker%20id%3D%22diamond%22%20markerWidth%3D%2212%22%20markerHeight%3D%2212%22%20refX%3D%221%22%20refY%3D%226%22%20orient%3D%22auto%22%3E%3Cpath%20d%3D%22M1%206%20L6%201%20L11%206%20L6%2011%20Z%22%20fill%3D%22white%22%20stroke%3D%22%23346678%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fmarker%3E%3C%2Fdefs%3E%0A%3Crect%20class%3D%22box%22%20x%3D%226.333333333333329%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M83.33333333333333%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%2283.33333333333333%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EClient%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22173.0%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M250.0%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22250.0%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Ehome%3C%2Ftext%3E%0A%3Ctext%20x%3D%22250.0%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EHomeFacade%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22339.6666666666667%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M416.6666666666667%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22416.6666666666667%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Ecurtains%3C%2Ftext%3E%0A%3Ctext%20x%3D%22416.6666666666667%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ECurtains%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22506.33333333333337%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M583.3333333333334%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22583.3333333333334%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Elight%3C%2Ftext%3E%0A%3Ctext%20x%3D%22583.3333333333334%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ELighting%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22673.0%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M750.0%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22750.0%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Eprojector%3C%2Ftext%3E%0A%3Ctext%20x%3D%22750.0%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3EProjector%3C%2Ftext%3E%0A%3Crect%20class%3D%22box%22%20x%3D%22839.6666666666666%22%20y%3D%2220%22%20width%3D%22154%22%20height%3D%2270%22%20rx%3D%225%22%2F%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M916.6666666666666%2090%20V465%22%20stroke-dasharray%3D%226%206%22%2F%3E%0A%3Ctext%20x%3D%22916.6666666666666%22%20y%3D%2249%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3Esound%3C%2Ftext%3E%0A%3Ctext%20x%3D%22916.6666666666666%22%20y%3D%2271%22%20text-anchor%3D%22middle%22%20style%3D%22font-size%3A13px%22%3ESoundSystem%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M83.33333333333333%20145%20H250.0%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22166.66666666666666%22%20y%3D%22132%22%20text-anchor%3D%22middle%22%3E1.%20start_movie%28%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M250.0%20210%20H416.6666666666667%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22333.33333333333337%22%20y%3D%22197%22%20text-anchor%3D%22middle%22%3E2.%20close%28%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M250.0%20275%20H583.3333333333334%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22416.6666666666667%22%20y%3D%22262%22%20text-anchor%3D%22middle%22%3E3.%20set_brightness%2820%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M250.0%20340%20H750.0%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22500.0%22%20y%3D%22327%22%20text-anchor%3D%22middle%22%3E4.%20turn_on%28%26quot%3BHDMI%201%26quot%3B%29%3C%2Ftext%3E%0A%3Cpath%20class%3D%22edge%22%20d%3D%22M250.0%20405%20H916.6666666666666%22%20marker-end%3D%22url%28%23arrow%29%22%2F%3E%0A%3Ctext%20class%3D%22method%22%20x%3D%22583.3333333333333%22%20y%3D%22392%22%20text-anchor%3D%22middle%22%3E5.%20turn_on%2835%29%3C%2Ftext%3E%0A%3C%2Fsvg%3E" alt="UML: последовательность вызовов"></div><figcaption>UML: последовательность вызовов</figcaption></figure>
+<h2 id="code">Код и дополнительная практика</h2>
+<p>Заготовка с TODO проверяется отдельно от работающих примеров.
+Команды и порядок выполнения — в <a href="../TASK.md">описании задания этого паттерна</a>.</p>
+<details open><summary>Реализация: home.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Facade: один вызов настраивает подсистемы для просмотра фильма.
+
+HomeFacade — Facade; Lighting, Curtains, Projector, SoundSystem — подсистемы.
+Подсистемы не знают о фасаде и доступны клиенту напрямую.
+&quot;&quot;&quot;
+
+
+class Lighting:
+    def __init__(self) -&gt; None:
+        self.brightness = 100
+
+    def set_brightness(self, percent: int) -&gt; None:
+        if not 0 &lt;= percent &lt;= 100:
+            raise ValueError(&quot;Яркость должна быть от 0 до 100&quot;)
+        self.brightness = percent
+
+
+class Curtains:
+    def __init__(self) -&gt; None:
+        self.is_closed = False
+
+    def close(self) -&gt; None:
+        self.is_closed = True
+
+    def open(self) -&gt; None:
+        self.is_closed = False
+
+
+class Projector:
+    def __init__(self) -&gt; None:
+        self.is_on = False
+        self.source: str | None = None
+
+    def turn_on(self, source: str) -&gt; None:
+        self.source = source
+        self.is_on = True
+
+    def turn_off(self) -&gt; None:
+        self.is_on = False
+        self.source = None
+
+
+class SoundSystem:
+    def __init__(self) -&gt; None:
+        self.is_on = False
+        self.volume = 0
+
+    def turn_on(self, volume: int) -&gt; None:
+        if not 0 &lt;= volume &lt;= 100:
+            raise ValueError(&quot;Громкость должна быть от 0 до 100&quot;)
+        self.volume = volume
+        self.is_on = True
+
+    def turn_off(self) -&gt; None:
+        self.is_on = False
+        self.volume = 0
+
+
+class HomeFacade:
+    def __init__(
+        self,
+        lighting: Lighting,
+        curtains: Curtains,
+        projector: Projector,
+        sound: SoundSystem,
+    ) -&gt; None:
+        self.lighting = lighting
+        self.curtains = curtains
+        self.projector = projector
+        self.sound = sound
+
+    def start_movie(self) -&gt; None:
+        self.curtains.close()
+        self.lighting.set_brightness(20)
+        self.projector.turn_on(&quot;HDMI 1&quot;)
+        self.sound.turn_on(35)
+
+    def end_movie(self) -&gt; None:
+        self.projector.turn_off()
+        self.sound.turn_off()
+        self.lighting.set_brightness(100)
+        self.curtains.open()
+
+    # ЗАДАНИЕ: добавьте в этот класс метод leave_home().
+    # Он выключает свет (яркость 0), проектор и звук, закрывает шторы.
+    # Используйте методы подсистем, не присваивайте их полям значения напрямую.
+    # Повторный вызов должен оставлять дом в том же состоянии.
+    # Условия и команды проверки: TASK.md; тесты: tests/test_task.py.
+</code></pre></details><details open><summary>Демонстрация: __main__.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>if __package__:
+    from .home import Curtains, HomeFacade, Lighting, Projector, SoundSystem
+else:
+    from home import Curtains, HomeFacade, Lighting, Projector, SoundSystem
+
+
+def demo() -&gt; None:
+    print(&quot;=== Facade: один вызов вместо настройки четырёх подсистем ===&quot;)
+    lighting, curtains = Lighting(), Curtains()
+    home = HomeFacade(lighting, curtains, Projector(), SoundSystem())
+    home.start_movie()
+    print(
+        f&quot;Кино: свет={home.lighting.brightness}%, шторы закрыты={home.curtains.is_closed}, &quot;
+        f&quot;проектор={home.projector.source}, звук={home.sound.volume}%&quot;
+    )
+    lighting.set_brightness(70)
+    print(f&quot;Прямой вызов подсистемы: свет={lighting.brightness}%&quot;)
+    home.end_movie()
+    print(f&quot;Фильм окончен: свет={home.lighting.brightness}%, проектор={home.projector.is_on}&quot;)
+    leave_home = getattr(home, &quot;leave_home&quot;, None)
+    if leave_home is not None:
+        leave_home()
+        print(f&quot;Ушли из дома: свет={home.lighting.brightness}%, шторы закрыты={home.curtains.is_closed}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    demo()
+</code></pre></details><details open><summary>Дополнительное задание: facade_night_mode.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>&quot;&quot;&quot;Facade: подготовка дома ко сну одним вызовом.
+
+Реализуйте NightModeFacade.start(): яркость 10%, шторы закрыты,
+проектор и звук выключены. Используйте публичные методы подсистем.
+Сценарий должен работать из любого их состояния и при повторном вызове.
+
+Из папки паттерна: pytest tests/test_extra.py
+&quot;&quot;&quot;
+
+from .home import Curtains, Lighting, Projector, SoundSystem
+
+
+class NightModeFacade:
+    def __init__(
+        self, lighting: Lighting, curtains: Curtains,
+        projector: Projector, sound: SoundSystem,
+    ) -&gt; None:
+        self.lighting = lighting
+        self.curtains = curtains
+        self.projector = projector
+        self.sound = sound
+
+    def start(self) -&gt; None:
+        # TODO: настройте четыре подсистемы, не присваивая их полям значения напрямую.
+        raise NotImplementedError(&quot;Реализуйте ночной сценарий фасада&quot;)
+</code></pre></details><details open><summary>Тесты: tests/test_example.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import Mock
+
+from ..home import Curtains, HomeFacade, Lighting, Projector, SoundSystem
+
+
+def make_home():
+    return HomeFacade(Lighting(), Curtains(), Projector(), SoundSystem())
+
+
+class FacadeTests(unittest.TestCase):
+    def test_start_movie_configures_all_subsystems(self):
+        home = make_home()
+        home.start_movie()
+        self.assertEqual(home.lighting.brightness, 20)
+        self.assertTrue(home.curtains.is_closed)
+        self.assertTrue(home.projector.is_on)
+        self.assertEqual(home.projector.source, &quot;HDMI 1&quot;)
+        self.assertTrue(home.sound.is_on)
+        self.assertEqual(home.sound.volume, 35)
+
+    def test_end_movie_resets_all_subsystems(self):
+        home = make_home()
+        home.start_movie()
+        home.end_movie()
+        self.assertEqual(home.lighting.brightness, 100)
+        self.assertFalse(home.curtains.is_closed)
+        self.assertFalse(home.projector.is_on)
+        self.assertIsNone(home.projector.source)
+        self.assertFalse(home.sound.is_on)
+        self.assertEqual(home.sound.volume, 0)
+
+    def test_subsystems_remain_available_without_facade(self):
+        home = make_home()
+        home.lighting.set_brightness(70)
+        self.assertEqual(home.lighting.brightness, 70)
+        self.assertFalse(home.projector.is_on)
+
+    def test_invalid_levels_do_not_change_subsystems(self):
+        light = Lighting()
+        sound = SoundSystem()
+        for value in (-1, 101):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    light.set_brightness(value)
+                with self.assertRaises(ValueError):
+                    sound.turn_on(value)
+        self.assertEqual(light.brightness, 100)
+        self.assertEqual(sound.volume, 0)
+        self.assertFalse(sound.is_on)
+
+</code></pre></details><details open><summary>Тесты: tests/test_task.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import Mock
+
+from ..home import Curtains, HomeFacade, Lighting, Projector, SoundSystem
+from .test_example import make_home
+
+
+class LeaveHomeTaskTests(unittest.TestCase):
+    def setUp(self):
+        self.assertTrue(
+            callable(getattr(HomeFacade, &quot;leave_home&quot;, None)),
+            &quot;ЗАДАНИЕ: добавьте HomeFacade.leave_home() в home.py (см. TASK.md)&quot;,
+        )
+
+    def test_leaving_home_from_initial_and_movie_states(self):
+        for watching_movie in (False, True):
+            with self.subTest(watching_movie=watching_movie):
+                home = make_home()
+                if watching_movie:
+                    home.start_movie()
+                for _ in range(2):
+                    home.leave_home()
+                    self.assertEqual(home.lighting.brightness, 0)
+                    self.assertTrue(home.curtains.is_closed)
+                    self.assertFalse(home.projector.is_on)
+                    self.assertIsNone(home.projector.source)
+                    self.assertFalse(home.sound.is_on)
+                    self.assertEqual(home.sound.volume, 0)
+
+    def test_leave_home_uses_public_subsystem_methods(self):
+        light = Mock(spec=Lighting)
+        curtains = Mock(spec=Curtains)
+        projector = Mock(spec=Projector)
+        sound = Mock(spec=SoundSystem)
+        home = HomeFacade(light, curtains, projector, sound)
+        home.leave_home()
+        light.set_brightness.assert_called_once_with(0)
+        curtains.close.assert_called_once_with()
+        projector.turn_off.assert_called_once_with()
+        sound.turn_off.assert_called_once_with()
+</code></pre></details><details open><summary>Тесты: tests/test_extra.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>import unittest
+from unittest.mock import Mock
+
+from ..facade_night_mode import NightModeFacade
+from ..home import Curtains, Lighting, Projector, SoundSystem
+
+
+class NightModeTests(unittest.TestCase):
+    def test_night_mode_from_different_states_and_repeated_call(self):
+        for watching_movie in (False, True):
+            with self.subTest(watching_movie=watching_movie):
+                light, curtains = Lighting(), Curtains()
+                projector, sound = Projector(), SoundSystem()
+                if watching_movie:
+                    light.set_brightness(80)
+                    projector.turn_on(&quot;HDMI 2&quot;)
+                    sound.turn_on(70)
+                facade = NightModeFacade(light, curtains, projector, sound)
+                for _ in range(2):
+                    facade.start()
+                    self.assertEqual(light.brightness, 10)
+                    self.assertTrue(curtains.is_closed)
+                    self.assertFalse(projector.is_on)
+                    self.assertIsNone(projector.source)
+                    self.assertFalse(sound.is_on)
+                    self.assertEqual(sound.volume, 0)
+
+    def test_calls_subsystem_methods(self):
+        light, curtains = Mock(spec=Lighting), Mock(spec=Curtains)
+        projector, sound = Mock(spec=Projector), Mock(spec=SoundSystem)
+        NightModeFacade(light, curtains, projector, sound).start()
+        light.set_brightness.assert_called_once_with(10)
+        curtains.close.assert_called_once_with()
+        projector.turn_off.assert_called_once_with()
+        sound.turn_off.assert_called_once_with()
+</code></pre></details>
+<footer>Страница собрана из исходников проекта.
+После изменений выполните <code>python3 tools/build_cheatsheets.py</code>.
+Диаграммы и код встроены в этот HTML; для перехода к другим паттернам сохраните папку проекта целиком.</footer>
+</main><script>
+document.querySelectorAll('.copy').forEach(button => {
+  button.addEventListener('click', async () => {
+    const code = button.parentElement.querySelector('code');
+    const status = button.nextElementSibling;
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      status.textContent = 'Скопировано';
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(code);
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+      status.textContent = 'Код выделен. Нажмите Ctrl+C или ⌘C.';
+    }
+  });
+});
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.dataset.wasOpen = String(item.open); item.open = true;
+  });
+});
+window.addEventListener('afterprint', () => {
+  document.querySelectorAll('details').forEach(item => {
+    item.open = item.dataset.wasOpen === 'true';
+  });
+});
+</script></body></html>

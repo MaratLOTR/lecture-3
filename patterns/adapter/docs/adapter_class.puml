@@ -1,0 +1,68 @@
+@startuml
+allowmixing
+top to bottom direction
+
+skinparam backgroundColor white
+skinparam monochrome true
+skinparam shadowing false
+skinparam roundcorner 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 18
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor white
+skinparam classHeaderBackgroundColor white
+skinparam rectangleBackgroundColor white
+skinparam noteBackgroundColor white
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+
+hide circle
+
+rectangle "Client\nset_all_power()" as Client
+
+interface Switchable <<interface>> {
+    +set_power(enabled: bool): None
+}
+
+class ModernLight {
+    +set_power(enabled: bool): None
+}
+
+class LegacyLamp <<Adaptee>> {
+    +powered: bool
+    +switch_on(): None
+    +switch_off(): None
+}
+
+class LampClassAdapter <<Adapter>> {
+    +set_power(enabled: bool): None
+}
+
+Client ..> Switchable : Use
+
+' Реализация интерфейса
+Switchable <|.. ModernLight
+Switchable <|.. LampClassAdapter
+
+' Наследование готового класса
+LegacyLamp <|-- LampClassAdapter
+
+' Расположение блоков
+Switchable -[hidden]right- LegacyLamp
+ModernLight -[hidden]right- LampClassAdapter
+
+note bottom of ModernLight
+    Поддерживает интерфейс
+    приложения напрямую
+end note
+
+note bottom of LampClassAdapter
+    Один объект:
+    методы и состояние LegacyLamp наследуются.
+
+    True: self.switch_on()
+    False: self.switch_off()
+end note
+
+@enduml

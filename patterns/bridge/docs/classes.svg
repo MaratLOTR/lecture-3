@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" role="img" aria-labelledby="title"><title id="title">bridge: диаграмма классов</title><style>text{font-family:system-ui,-apple-system,sans-serif;fill:#173443;font-size:16px}.role{font-size:13px;fill:#556d77}.method{font:14px ui-monospace,monospace}.edge{fill:none;stroke:#346678;stroke-width:2}.box{fill:#fff;stroke:#346678;stroke-width:1.5}</style><rect width="1000" height="470" fill="#f8fbfc"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#346678" stroke-width="1.5"/></marker><marker id="inherit" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker><marker id="diamond" markerWidth="12" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1 6 L6 1 L11 6 L6 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker></defs>
+<polyline class="edge" points="350,100 620,100" marker-end="url(#arrow)"/>
+<text class="role" x="485.0" y="90.0" text-anchor="middle">device</text>
+<polyline class="edge" points="205,300 205,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="575,300 575,210 770,210 770,170" marker-end="url(#inherit)"/>
+<polyline class="edge" points="855,300 855,240 770,240 770,170" marker-end="url(#inherit)"/>
+<rect class="box" x="60" y="30" width="290" height="140" rx="5"/>
+<text x="205.0" y="58" text-anchor="middle" font-weight="650">Remote</text>
+<text class="role" x="205.0" y="80" text-anchor="middle">Abstraction</text>
+<path class="edge" d="M60 92 H350"/>
+<text class="method" x="74" y="116">device: MediaDevice</text>
+<text class="method" x="74" y="137">toggle_power()</text>
+<text class="method" x="74" y="158">set_volume(percent)</text>
+<rect class="box" x="620" y="30" width="300" height="140" rx="5"/>
+<text x="770.0" y="58" text-anchor="middle" font-weight="650">MediaDevice</text>
+<text class="role" x="770.0" y="80" text-anchor="middle">Implementor</text>
+<path class="edge" d="M620 92 H920"/>
+<text class="method" x="634" y="116">set_power(enabled)</text>
+<text class="method" x="634" y="137">set_volume(percent)</text>
+<text class="method" x="634" y="158">volume</text>
+<rect class="box" x="60" y="300" width="290" height="140" rx="5"/>
+<text x="205.0" y="328" text-anchor="middle" font-weight="650">AdvancedRemote</text>
+<text class="role" x="205.0" y="350" text-anchor="middle">RefinedAbstraction</text>
+<path class="edge" d="M60 362 H350"/>
+<text class="method" x="74" y="386">mute()</text>
+<rect class="box" x="460" y="300" width="230" height="140" rx="5"/>
+<text x="575.0" y="328" text-anchor="middle" font-weight="650">TV</text>
+<text class="role" x="575.0" y="350" text-anchor="middle">ConcreteImplementor</text>
+<path class="edge" d="M460 362 H690"/>
+<text class="method" x="474" y="386">громкость в процентах</text>
+<rect class="box" x="740" y="300" width="230" height="140" rx="5"/>
+<text x="855.0" y="328" text-anchor="middle" font-weight="650">Projector</text>
+<text class="role" x="855.0" y="350" text-anchor="middle">ConcreteImplementor</text>
+<path class="edge" d="M740 362 H970"/>
+<text class="method" x="754" y="386">громкость по ступеням</text>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" role="img" aria-labelledby="title"><title id="title">facade: диаграмма классов</title><style>text{font-family:system-ui,-apple-system,sans-serif;fill:#173443;font-size:16px}.role{font-size:13px;fill:#556d77}.method{font:14px ui-monospace,monospace}.edge{fill:none;stroke:#346678;stroke-width:2}.box{fill:#fff;stroke:#346678;stroke-width:1.5}</style><rect width="1000" height="470" fill="#f8fbfc"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#346678" stroke-width="1.5"/></marker><marker id="inherit" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker><marker id="diamond" markerWidth="12" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1 6 L6 1 L11 6 L6 11 Z" fill="white" stroke="#346678" stroke-width="1.5"/></marker></defs>
+<polyline class="edge" points="280,100 370,100" marker-end="url(#arrow)"/>
+<polyline class="edge" points="500,170 500,235 130,235 130,300" marker-end="url(#arrow)"/>
+<polyline class="edge" points="500,170 500,235 375,235 375,300" marker-end="url(#arrow)"/>
+<polyline class="edge" points="500,170 500,235 620,235 620,300" marker-end="url(#arrow)"/>
+<polyline class="edge" points="500,170 500,235 867,235 867,300" marker-end="url(#arrow)"/>
+<rect class="box" x="30" y="30" width="250" height="140" rx="5"/>
+<text x="155.0" y="58" text-anchor="middle" font-weight="650">Client</text>
+<text class="role" x="155.0" y="80" text-anchor="middle">клиент</text>
+<path class="edge" d="M30 92 H280"/>
+<text class="method" x="44" y="116">home.start_movie()</text>
+<rect class="box" x="370" y="30" width="260" height="140" rx="5"/>
+<text x="500.0" y="58" text-anchor="middle" font-weight="650">HomeFacade</text>
+<text class="role" x="500.0" y="80" text-anchor="middle">Facade</text>
+<path class="edge" d="M370 92 H630"/>
+<text class="method" x="384" y="116">start_movie()</text>
+<text class="method" x="384" y="137">end_movie()</text>
+<rect class="box" x="20" y="300" width="220" height="140" rx="5"/>
+<text x="130.0" y="328" text-anchor="middle" font-weight="650">Curtains</text>
+<text class="role" x="130.0" y="350" text-anchor="middle">подсистема</text>
+<path class="edge" d="M20 362 H240"/>
+<text class="method" x="34" y="386">close()</text>
+<text class="method" x="34" y="407">open()</text>
+<rect class="box" x="265" y="300" width="220" height="140" rx="5"/>
+<text x="375.0" y="328" text-anchor="middle" font-weight="650">Lighting</text>
+<text class="role" x="375.0" y="350" text-anchor="middle">подсистема</text>
+<path class="edge" d="M265 362 H485"/>
+<text class="method" x="279" y="386">set_brightness(percent)</text>
+<rect class="box" x="510" y="300" width="220" height="140" rx="5"/>
+<text x="620.0" y="328" text-anchor="middle" font-weight="650">Projector</text>
+<text class="role" x="620.0" y="350" text-anchor="middle">подсистема</text>
+<path class="edge" d="M510 362 H730"/>
+<text class="method" x="524" y="386">turn_on(source)</text>
+<text class="method" x="524" y="407">turn_off()</text>
+<rect class="box" x="755" y="300" width="225" height="140" rx="5"/>
+<text x="867.5" y="328" text-anchor="middle" font-weight="650">SoundSystem</text>
+<text class="role" x="867.5" y="350" text-anchor="middle">подсистема</text>
+<path class="edge" d="M755 362 H980"/>
+<text class="method" x="769" y="386">turn_on(volume)</text>
+<text class="method" x="769" y="407">turn_off()</text>
+</svg>
