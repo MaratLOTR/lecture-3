@@ -75,8 +75,6 @@ class ForeignFan:
         self.mode = mode
 
 
-# ЗАДАНИЕ (слайд 19): добавьте FanAdapter(Switchable), хранящий self.fan,
-# и FanClassAdapter(Switchable, ForeignFan), наследующий готовый API.
-# Оба переводят set_power(True) в set_mode("RUN"), False — в set_mode("STOP").
+# ЗАДАНИЕ: реализуйте адаптеры, поддерживающие интерфейс Switchable.
 # Не меняйте ForeignFan и клиентскую функцию set_all_power.
 # Условия и команды проверки: TASK.md; тесты: tests/test_task.py.

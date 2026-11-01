@@ -26,7 +26,6 @@ footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#5269
 <p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
 Bridge — дополнительный раздел для самостоятельного изучения.</p>
 <h1>Adapter — Адаптер</h1>
-<p>Пример из презентации «Лекция 3»: слайды 7–16; практика: слайд 19. Номера соответствуют фактическому порядку слайдов в файле.</p>
 <h2>Проблема</h2>
 <p>Приложение управляет приборами через <code>set_power(enabled)</code>. <code>ModernLight</code> уже поддерживает этот интерфейс. Готовая <code>LegacyLamp</code> предоставляет только <code>switch_on()</code> и <code>switch_off()</code>. Если передать её клиенту напрямую, получим <code>AttributeError</code>: у старой лампы нет <code>set_power()</code>.</p>
 <p>Adapter преобразует готовый интерфейс в тот, которого ожидает клиент. Старую библиотеку и общий алгоритм управления менять не требуется.</p>
@@ -42,7 +41,6 @@ set_all_power(devices, True)
 assert lamp.powered is True
 assert class_adapter.powered is True
 set_all_power(devices, False)</code></pre>
-<p>В файле со слайдом 8 клиент показан как <code>Client.set_all_power()</code>, а на последующих слайдах — как функция <code>set_all_power()</code>. Здесь используется функция с корректной аннотацией <code>Iterable[Switchable]</code>; алгоритм обхода одинаков.</p>
 <h2>Код и запуск</h2>
 <ul><li><a href="../devices.py">devices.py</a> — контракт, устройства, оба адаптера и общий клиент.</li><li><a href="../__main__.py">__main__.py</a> — включение и выключение всех вариантов одним клиентом.</li><li><a href="../TASK.md">TASK.md</a> — задание: два адаптера вентилятора (<code>fan</code> — вентилятор).</li><li><a href="../tests/test_example.py">tests/test_example.py</a> — проверки готового примера.</li><li><a href="../tests/test_task.py">tests/test_task.py</a> — проверки задания.</li></ul>
 <p>Все материалы находятся в этой папке; её можно передать студенту отдельно. Нужен Python 3.10+ и pytest 9+. В Codespaces pytest устанавливается автоматически. Из этой папки:</p>
@@ -142,9 +140,7 @@ class ForeignFan:
         self.mode = mode
 
 
-# ЗАДАНИЕ (слайд 19): добавьте FanAdapter(Switchable), хранящий self.fan,
-# и FanClassAdapter(Switchable, ForeignFan), наследующий готовый API.
-# Оба переводят set_power(True) в set_mode(&quot;RUN&quot;), False — в set_mode(&quot;STOP&quot;).
+# ЗАДАНИЕ: реализуйте адаптеры, поддерживающие интерфейс Switchable.
 # Не меняйте ForeignFan и клиентскую функцию set_all_power.
 # Условия и команды проверки: TASK.md; тесты: tests/test_task.py.
 </code></pre></details><details open><summary>Демонстрация: __main__.py</summary><button type="button" class="copy">Копировать код</button><span class="status" role="status"></span><pre><code>if __package__:
