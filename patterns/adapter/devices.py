@@ -57,10 +57,6 @@ class LampClassAdapter(Switchable, LegacyLamp):
             self.switch_off()
 
 
-# Сохраняем прежнее имя для уже написанных примеров.
-LegacyLampAdapter = LampObjectAdapter
-
-
 def set_all_power(devices: Iterable[Switchable], enabled: bool) -> None:
     """Клиенту не нужно знать конкретные классы и старые методы."""
     for device in devices:
@@ -68,7 +64,7 @@ def set_all_power(devices: Iterable[Switchable], enabled: bool) -> None:
 
 
 class ForeignFan:
-    """Ещё один сторонний API, который предстоит адаптировать."""
+    """Готовый сторонний вентилятор (fan): RUN — включён, STOP — выключен."""
 
     def __init__(self) -> None:
         self.mode = "STOP"

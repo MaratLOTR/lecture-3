@@ -49,16 +49,14 @@ set_all_power(devices, False)
 В файле со слайдом 8 клиент показан как `Client.set_all_power()`, а на последующих
 слайдах — как функция `set_all_power()`. Здесь используется функция с корректной
 аннотацией `Iterable[Switchable]`; алгоритм обхода одинаков.
-Прежнее имя `LegacyLampAdapter` сохранено как ссылка на `LampObjectAdapter`.
 
 ## Код и запуск
 
 - [devices.py](devices.py) — контракт, устройства, оба адаптера и общий клиент.
 - [__main__.py](__main__.py) — включение и выключение всех вариантов одним клиентом.
-- [TASK.md](TASK.md) — задание из лекции и дополнительная практика.
+- [TASK.md](TASK.md) — задание: два адаптера вентилятора (`fan` — вентилятор).
 - [tests/test_example.py](tests/test_example.py) — проверки готового примера.
 - [tests/test_task.py](tests/test_task.py) — проверки задания.
-- [adapter_thermostat.py](adapter_thermostat.py) и [tests/test_extra.py](tests/test_extra.py) — дополнительная практика.
 
 Все материалы находятся в этой папке; её можно передать студенту отдельно.
 Нужен Python 3.10+ и pytest 9+. В Codespaces pytest устанавливается автоматически. Из этой папки:

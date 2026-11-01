@@ -24,7 +24,7 @@ pytest tests/test_task.py
 ```
 
 В `facade`, `composite` и `bridge` команды такие же.
-Для дополнительной практики выполните `pytest tests/test_extra.py`.
+В Facade, Composite и Bridge есть дополнительная практика: `pytest tests/test_extra.py`.
 `pytest` внутри папки запускает все тесты этого паттерна.
 
 Готовые примеры проходят сразу. Тесты заданий завершаются `FAILED`, пока студент

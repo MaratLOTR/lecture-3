@@ -54,6 +54,3 @@ class AdapterTests(unittest.TestCase):
                     adapter.set_power(enabled)
                     call.assert_called_once_with()
 
-    def test_old_adapter_name_remains_available(self):
-        self.assertIs(devices.LegacyLampAdapter, devices.LampObjectAdapter)
-
