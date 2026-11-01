@@ -22,7 +22,7 @@ footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#5269
 @media(max-width:600px){main{padding:20px 15px}pre{font-size:14px}h2{font-size:25px}}
 @media print{nav,button,.status{display:none}main{max-width:none;padding:0}body{background:#fff}pre{white-space:pre-wrap;overflow:visible;font-size:10px}pre code{white-space:pre-wrap}details{break-inside:avoid}.diagram img{min-width:0}h2,h3{break-after:avoid}}
 </style></head>
-<body><main><nav aria-label="Паттерны"><a href="../../adapter/docs/cheatsheet.html" aria-current="page">Adapter — Адаптер</a><a href="../../facade/docs/cheatsheet.html">Facade — Фасад</a><a href="../../composite/docs/cheatsheet.html">Composite — Компоновщик</a><a href="../../bridge/docs/cheatsheet.html">Bridge — Мост · самостоятельно</a></nav>
+<body><main><nav aria-label="Материалы паттерна"><a href="../README.md">Теория и запуск</a><a href="../TASK.md">Задание</a></nav>
 <p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
 Bridge — дополнительный раздел для самостоятельного изучения.</p>
 <h1>Adapter — Адаптер</h1>
@@ -50,7 +50,6 @@ set_all_power(devices, False)</code></pre>
 pytest tests/test_example.py
 pytest tests/test_task.py</code></pre>
 <p>Готовый пример проходит сразу. Проверки задания дают <code>FAILED</code>, пока требуемые классы не реализованы. Успех — все проверки <code>PASSED</code>, без пропусков.</p>
-<p>Из корня проекта также работают <code>python3 -m patterns.adapter</code> и <code>pytest tests/test_adapter.py</code> (пример и задание вместе).</p>
 <h2>Применимость и ограничения</h2>
 <p>Adapter нужен при подключении стороннего или устаревшего API. Он позволяет повторно использовать код и изолировать особенности этого API от клиента. Цена — дополнительные классы и делегирование; изменение API потребует проверки адаптера. Для простого случая отдельный класс может оказаться избыточным. Адаптация должна сохранять смысл операций, даже если различаются единицы измерения.</p>
 <p><strong>Вопрос:</strong> какой вариант позволяет подключить уже созданный экземпляр лампы и почему?</p>
@@ -64,7 +63,6 @@ pytest tests/test_task.py</code></pre>
 <p>Из этой папки паттерна:</p>
 <pre><code>pytest tests/test_task.py</code></pre>
 <p>Пока классы не добавлены, проверки дают <code>FAILED</code> с подсказкой. Задание выполнено, когда все пять тестов завершаются <code>PASSED</code>, без пропусков. Тесты проверяют сохранение исходного объекта, наследование, начальное состояние, вызовы стороннего API и работу обоих адаптеров через общий клиент.</p>
-<p>Из корня проекта также работает <code>pytest tests/test_adapter.py</code> (проверяет готовый пример и задание вместе).</p>
 <h2>Дополнительная практика</h2>
 <p><a href="../adapter_thermostat.py">adapter_thermostat.py</a> — отдельное задание вне лекции: реализуйте чтение и запись температуры через <code>ThermostatAdapter</code>, согласуя °C и °F. Формулы, диапазон и требования к ошибкам описаны в начале файла.</p>
 <pre><code>pytest tests/test_extra.py</code></pre>
@@ -396,9 +394,7 @@ class ThermostatTests(unittest.TestCase):
                 adapter.set_celsius(invalid)
             self.assertAlmostEqual(thermostat.read_fahrenheit(), 86)
 </code></pre></details>
-<footer>Страница собрана из исходников проекта.
-После изменений выполните <code>python3 tools/build_cheatsheets.py</code>.
-Диаграммы и код встроены в этот HTML; для перехода к другим паттернам сохраните папку проекта целиком.</footer>
+<footer>Теория, код, задания и тесты находятся в этой папке паттерна.</footer>
 </main><script>
 document.querySelectorAll('.copy').forEach(button => {
   button.addEventListener('click', async () => {

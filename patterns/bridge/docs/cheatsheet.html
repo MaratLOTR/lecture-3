@@ -22,7 +22,7 @@ footer{margin-top:50px;border-top:1px solid #ccd7da;padding-top:18px;color:#5269
 @media(max-width:600px){main{padding:20px 15px}pre{font-size:14px}h2{font-size:25px}}
 @media print{nav,button,.status{display:none}main{max-width:none;padding:0}body{background:#fff}pre{white-space:pre-wrap;overflow:visible;font-size:10px}pre code{white-space:pre-wrap}details{break-inside:avoid}.diagram img{min-width:0}h2,h3{break-after:avoid}}
 </style></head>
-<body><main><nav aria-label="Паттерны"><a href="../../adapter/docs/cheatsheet.html">Adapter — Адаптер</a><a href="../../facade/docs/cheatsheet.html">Facade — Фасад</a><a href="../../composite/docs/cheatsheet.html">Composite — Компоновщик</a><a href="../../bridge/docs/cheatsheet.html" aria-current="page">Bridge — Мост · самостоятельно</a></nav>
+<body><main><nav aria-label="Материалы паттерна"><a href="../README.md">Теория и запуск</a><a href="../TASK.md">Задание</a></nav>
 <p class="note">Умный дом · Python 3.10+ · pytest 9+ для тестов · Материал и диаграммы доступны без интернета.
 Bridge — дополнительный раздел для самостоятельного изучения.</p>
 <h1>Bridge — Мост</h1>
@@ -48,7 +48,6 @@ projector_remote.mute()</code></pre>
 pytest tests/test_example.py
 pytest tests/test_task.py</code></pre>
 <p><code>test_example.py</code> проверяет готовый пример, <code>test_task.py</code> — выполнение задания. До выполнения задания вторая проверка выдаёт ошибки; это ожидаемо.</p>
-<p>Из корня проекта по-прежнему работают <code>python3 -m patterns.bridge</code> и команда <code>pytest tests/test_bridge.py</code> (пример и задание вместе).</p>
 <h2>Самостоятельное задание</h2>
 <p><a href="../TASK.md">Условия, дополнительная практика и команды проверки</a>.</p>
 <h2>Углублённый разбор</h2>
@@ -355,9 +354,7 @@ class LimitedRemoteTests(unittest.TestCase):
                 remote.set_volume(invalid)
             self.assertEqual(device.volume, 30)
 </code></pre></details>
-<footer>Страница собрана из исходников проекта.
-После изменений выполните <code>python3 tools/build_cheatsheets.py</code>.
-Диаграммы и код встроены в этот HTML; для перехода к другим паттернам сохраните папку проекта целиком.</footer>
+<footer>Теория, код, задания и тесты находятся в этой папке паттерна.</footer>
 </main><script>
 document.querySelectorAll('.copy').forEach(button => {
   button.addEventListener('click', async () => {
